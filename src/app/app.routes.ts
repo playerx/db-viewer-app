@@ -33,10 +33,6 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'data/:collection',
-    loadComponent: () => import('./pages/collectionData.page').then((m) => m.CollectionDataPage),
-  },
-  {
     path: 'document/:collection/:id',
     loadComponent: () =>
       import('./pages/documentDetail.page').then((m) => m.DocumentDetailPage),
