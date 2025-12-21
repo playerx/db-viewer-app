@@ -1,14 +1,15 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/data"></ion-back-button>
+      <ion-back-button [text]="collection()"
+                       defaultHref="/tabs/data"></ion-back-button>
     </ion-buttons>
     <ion-title>Document Details</ion-title>
     <ion-buttons slot="end">
       @if (!editMode()) {
-        <ion-button (click)="toggleEditMode()">Edit</ion-button>
+      <ion-button (click)="toggleEditMode()">Edit</ion-button>
       } @else {
-        <ion-button (click)="toggleEditMode()">Cancel</ion-button>
+      <ion-button (click)="toggleEditMode()">Cancel</ion-button>
       }
     </ion-buttons>
   </ion-toolbar>
@@ -17,96 +18,101 @@
 <ion-content>
   <div class="detailContainer">
     @if (loading() && !document()) {
-      <div class="loadingContainer">
-        <ion-spinner></ion-spinner>
-      </div>
+    <div class="loadingContainer">
+      <ion-spinner></ion-spinner>
+    </div>
     }
 
     @if (error()) {
-      <div class="errorContainer">
-        <p>{{ error() }}</p>
-        <ion-button (click)="loadDocument()">Retry</ion-button>
-      </div>
+    <div class="errorContainer">
+      <p>{{ error() }}</p>
+      <ion-button (click)="loadDocument()">Retry</ion-button>
+    </div>
     }
 
     @if (document() && !error()) {
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>{{ collection() }}</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <div class="readOnlyField">
-            <strong>ID:</strong> {{ documentId() }}
-          </div>
-        </ion-card-content>
-      </ion-card>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{ collection() }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="readOnlyField">
+          <strong>ID:</strong> {{ documentId() }}
+        </div>
+      </ion-card-content>
+    </ion-card>
 
-      @if (!editMode()) {
-        <!-- View Mode -->
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Document Data</ion-card-title>
-          </ion-card-header>
-          <ion-card-content>
-            <pre style="overflow-x: auto; font-size: 14px;">{{ document() | json }}</pre>
-          </ion-card-content>
-        </ion-card>
+    @if (!editMode()) {
+    <!-- View Mode -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Document Data</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <pre style="overflow-x: auto; font-size: 14px;">{{ document() | json }}</pre>
+      </ion-card-content>
+    </ion-card>
 
-        <div class="actionButtons">
-          <ion-button expand="block" color="danger" (click)="deleteDocument()">
-            Delete Document
+    <div class="actionButtons">
+      <ion-button expand="block"
+                  color="danger"
+                  (click)="deleteDocument()">
+        Delete Document
+      </ion-button>
+    </div>
+    } @else {
+    <!-- Edit Mode -->
+    <ion-card>
+      <ion-card-header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <ion-card-title>Edit Document</ion-card-title>
+          <ion-button size="small"
+                      fill="outline"
+                      (click)="toggleJsonEditMode()">
+            {{ jsonEditMode() ? 'Form View' : 'JSON View' }}
           </ion-button>
         </div>
-      } @else {
-        <!-- Edit Mode -->
-        <ion-card>
-          <ion-card-header>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <ion-card-title>Edit Document</ion-card-title>
-              <ion-button size="small" fill="outline" (click)="toggleJsonEditMode()">
-                {{ jsonEditMode() ? 'Form View' : 'JSON View' }}
-              </ion-button>
-            </div>
-          </ion-card-header>
-          <ion-card-content>
-            @if (jsonEditMode()) {
-              <!-- JSON Editor -->
-              <ion-textarea
-                class="jsonEditor"
-                [(ngModel)]="jsonString"
-                placeholder="Enter valid JSON"
-                [rows]="15"
-              ></ion-textarea>
-            } @else {
-              <!-- Form Editor -->
-              <ion-list>
-                @for (key of getDocumentKeys(); track key) {
-                  <ion-item class="fieldItem">
-                    <ion-label position="stacked">{{ key }}</ion-label>
-                    <ion-input
-                      [value]="editedDocument()[key]?.toString() || ''"
-                      (ionInput)="updateField(key, $any($event.target).value)"
-                      placeholder="Enter value"
-                    ></ion-input>
-                  </ion-item>
-                }
-              </ion-list>
-            }
-          </ion-card-content>
-        </ion-card>
+      </ion-card-header>
+      <ion-card-content>
+        @if (jsonEditMode()) {
+        <!-- JSON Editor -->
+        <ion-textarea class="jsonEditor"
+                      [(ngModel)]="jsonString"
+                      placeholder="Enter valid JSON"
+                      [rows]="15"></ion-textarea>
+        } @else {
+        <!-- Form Editor -->
+        <ion-list>
+          @for (key of getDocumentKeys(); track key) {
+          <ion-item class="fieldItem">
+            <ion-label position="stacked">{{ key }}</ion-label>
+            <ion-input [value]="editedDocument()[key]?.toString() || ''"
+                       (ionInput)="updateField(key, $any($event.target).value)"
+                       placeholder="Enter value"></ion-input>
+          </ion-item>
+          }
+        </ion-list>
+        }
+      </ion-card-content>
+    </ion-card>
 
-        <div class="actionButtons">
-          <ion-button expand="block" (click)="saveDocument()" [disabled]="loading()">
-            @if (loading()) {
-              <ion-spinner slot="start"></ion-spinner>
-            }
-            Save Changes
-          </ion-button>
-          <ion-button expand="block" color="danger" fill="outline" (click)="deleteDocument()">
-            Delete Document
-          </ion-button>
-        </div>
-      }
+    <div class="actionButtons">
+      <ion-button expand="block"
+                  (click)="saveDocument()"
+                  [disabled]="loading()">
+        @if (loading()) {
+        <ion-spinner slot="start"></ion-spinner>
+        }
+        Save Changes
+      </ion-button>
+      <ion-button expand="block"
+                  color="danger"
+                  fill="outline"
+                  (click)="deleteDocument()">
+        Delete Document
+      </ion-button>
+    </div>
+    }
     }
   </div>
 </ion-content>

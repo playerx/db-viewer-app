@@ -28,7 +28,7 @@ import { chevronForward } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 
 @Component({
-  selector: 'app-collection',
+  selector: 'app-collections',
   imports: [
     IonHeader,
     IonToolbar,
@@ -46,7 +46,7 @@ import { ApiService } from '../services/api.service'
     IonButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './collection.page.html',
+  templateUrl: './collections.page.html',
   styles: `
     .collectionCard {
       cursor: pointer;
@@ -76,7 +76,7 @@ import { ApiService } from '../services/api.service'
     }
   `,
 })
-export class CollectionPage implements OnInit {
+export class CollectionsPage implements OnInit {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
 

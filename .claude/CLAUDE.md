@@ -35,6 +35,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - For components always create html file as a separate one and keep styles into the ts file. Avoid creating folder for the component
 - Always move pages into app/pages folder
 - Never use observables. Always use signals for state management.
+- use cammelCase name in component names
 
 ## Styles
 

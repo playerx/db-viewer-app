@@ -21,9 +21,9 @@ export const routes: Routes = [
           import('./pages/prompt.page').then((m) => m.PromptPage),
       },
       {
-        path: 'collection',
+        path: 'collections',
         loadComponent: () =>
-          import('./pages/collection.page').then((m) => m.CollectionPage),
+          import('./pages/collections.page').then((m) => m.CollectionsPage),
       },
       {
         path: 'events',
