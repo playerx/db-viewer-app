@@ -9,13 +9,12 @@ import {
 import { Router } from '@angular/router'
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
   IonContent,
   IonHeader,
   IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
   IonRefresher,
   IonRefresherContent,
   IonSearchbar,
@@ -38,25 +37,15 @@ import { ApiService } from '../services/api.service'
     IonSpinner,
     IonRefresher,
     IonRefresherContent,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
+    IonList,
+    IonItem,
+    IonLabel,
     IonIcon,
     IonButton,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './collections.page.html',
   styles: `
-    .collectionCard {
-      cursor: pointer;
-      transition: transform 0.2s;
-
-      &:hover {
-        transform: translateY(-2px);
-      }
-    }
-
     .loadingContainer {
       display: flex;
       justify-content: center;
@@ -68,11 +57,6 @@ import { ApiService } from '../services/api.service'
       text-align: center;
       padding: 40px 20px;
       color: var(--ion-color-medium);
-    }
-
-    .cardContent {
-      display: flex;
-      justify-content: flex-end;
     }
   `,
 })

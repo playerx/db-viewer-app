@@ -15,37 +15,33 @@
     </ion-toolbar>
   </ion-header>
 
-  <div class="ion-padding">
-    <ion-searchbar
-      [value]="searchQuery()"
-      (ionInput)="searchQuery.set($any($event.target).value)"
-      placeholder="Search collections"
-    ></ion-searchbar>
+  <ion-searchbar
+    [value]="searchQuery()"
+    (ionInput)="searchQuery.set($any($event.target).value)"
+    placeholder="Search collections"
+  ></ion-searchbar>
 
-    @if (loading()) {
-      <div class="loadingContainer">
-        <ion-spinner></ion-spinner>
-      </div>
-    } @else if (error()) {
-      <div class="emptyState">
-        <p>{{ error() }}</p>
-        <ion-button (click)="loadCollections()">Retry</ion-button>
-      </div>
-    } @else if (filteredCollections().length === 0) {
-      <div class="emptyState">
-        <p>No collections found</p>
-      </div>
-    } @else {
+  @if (loading()) {
+    <div class="loadingContainer">
+      <ion-spinner></ion-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="emptyState">
+      <p>{{ error() }}</p>
+      <ion-button (click)="loadCollections()">Retry</ion-button>
+    </div>
+  } @else if (filteredCollections().length === 0) {
+    <div class="emptyState">
+      <p>No collections found</p>
+    </div>
+  } @else {
+    <ion-list>
       @for (collection of filteredCollections(); track collection) {
-        <ion-card class="collectionCard" (click)="selectCollection(collection)">
-          <ion-card-header>
-            <ion-card-title>{{ collection }}</ion-card-title>
-          </ion-card-header>
-          <ion-card-content class="cardContent">
-            <ion-icon name="chevronForward"></ion-icon>
-          </ion-card-content>
-        </ion-card>
+        <ion-item button (click)="selectCollection(collection)">
+          <ion-label>{{ collection }}</ion-label>
+          <ion-icon slot="end" name="chevronForward"></ion-icon>
+        </ion-item>
       }
-    }
-  </div>
+    </ion-list>
+  }
 </ion-content>
