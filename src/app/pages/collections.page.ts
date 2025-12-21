@@ -26,6 +26,8 @@ import {
   IonRefresher,
   IonRefresherContent,
   IonSearchbar,
+  IonSelect,
+  IonSelectOption,
   IonSpinner,
   IonSplitPane,
   IonTitle,
@@ -61,6 +63,8 @@ import { ApiService } from '../services/api.service'
     IonNote,
     IonInput,
     IonChip,
+    IonSelect,
+    IonSelectOption,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './collections.page.html',
@@ -130,6 +134,11 @@ import { ApiService } from '../services/api.service'
         --background: var(--ion-color-white, #fff);
       }
 
+      .operatorInput {
+        flex: 0.8;
+        min-width: 140px;
+      }
+
       .addFilterButton {
         flex-shrink: 0;
         height: 40px;
@@ -193,6 +202,7 @@ export class CollectionsPage implements OnInit {
   error = signal<string | null>(null)
 
   selectedCollection = signal<string | null>(null)
+  initialDocuments = signal<DocumentData[]>([])
   documents = signal<DocumentData[]>([])
   pagination = signal<PaginationInfo | null>(null)
   documentsLoading = signal(false)
@@ -200,6 +210,7 @@ export class CollectionsPage implements OnInit {
 
   filters = signal<FilterItem[]>([])
   newFilterField = signal('')
+  newFilterOperator = signal('eq')
   newFilterValue = signal('')
   showFilters = signal(false)
   showFieldAutocomplete = signal(false)
@@ -215,11 +226,70 @@ export class CollectionsPage implements OnInit {
     if (docs.length === 0) return []
 
     const fieldSet = new Set<string>()
+    const types: Record<string, string> = {}
+
     docs.forEach((doc) => {
-      Object.keys(doc).forEach((key) => fieldSet.add(key))
+      Object.keys(doc).forEach((key) => {
+        fieldSet.add(key)
+        // Detect type from first non-null value
+        if (!types[key] && doc[key] !== null && doc[key] !== undefined) {
+          const value = doc[key]
+          if (typeof value === 'number') {
+            types[key] = 'number'
+          } else if (typeof value === 'boolean') {
+            types[key] = 'boolean'
+          } else if (
+            value instanceof Date ||
+            (typeof value === 'string' &&
+              !isNaN(Date.parse(value)) &&
+              /^\d{4}-\d{2}-\d{2}/.test(value))
+          ) {
+            types[key] = 'date'
+          } else {
+            types[key] = 'string'
+          }
+        }
+      })
     })
 
-    return Array.from(fieldSet).sort()
+    // this.fieldTypes.set(types)
+    const res = Array.from(fieldSet).sort()
+
+    return res
+  })
+
+  fieldTypes = computed<Record<string, string>>(() => {
+    const docs = this.initialDocuments()
+    if (docs.length === 0) return {}
+
+    const fieldSet = new Set<string>()
+    const types: Record<string, string> = {}
+
+    docs.forEach((doc) => {
+      Object.keys(doc).forEach((key) => {
+        fieldSet.add(key)
+        // Detect type from first non-null value
+        if (!types[key] && doc[key] !== null && doc[key] !== undefined) {
+          const value = doc[key]
+          if (typeof value === 'number') {
+            types[key] = 'number'
+          } else if (typeof value === 'boolean') {
+            types[key] = 'boolean'
+          } else if (
+            value instanceof Date ||
+            (typeof value === 'string' &&
+              !isNaN(Date.parse(value)) &&
+              /^\d{4}-\d{2}-\d{2}/.test(value))
+          ) {
+            types[key] = 'date'
+          } else {
+            types[key] = 'string'
+          }
+        }
+      })
+    })
+
+    return types
   })
 
   filteredFields = computed(() => {
@@ -227,6 +297,38 @@ export class CollectionsPage implements OnInit {
     const fields = this.availableFields()
     if (!query) return fields
     return fields.filter((f) => f.toLowerCase().includes(query))
+  })
+
+  currentFieldType = computed(() => {
+    const field = this.newFilterField()
+    return this.fieldTypes()[field] || 'string'
+  })
+
+  availableOperators = computed(() => {
+    const fieldType = this.currentFieldType()
+    if (fieldType === 'number' || fieldType === 'date') {
+      return [
+        { value: 'eq', label: 'equals (=)' },
+        { value: 'ne', label: 'not equals (≠)' },
+        { value: 'gt', label: 'greater than (>)' },
+        { value: 'ge', label: 'greater or equal (≥)' },
+        { value: 'lt', label: 'less than (<)' },
+        { value: 'le', label: 'less or equal (≤)' },
+      ]
+    } else if (fieldType === 'boolean') {
+      return [
+        { value: 'eq', label: 'equals (=)' },
+        { value: 'ne', label: 'not equals (≠)' },
+      ]
+    } else {
+      return [
+        { value: 'eq', label: 'equals (=)' },
+        { value: 'ne', label: 'not equals (≠)' },
+        { value: 'contains', label: 'contains' },
+        { value: 'startswith', label: 'starts with' },
+        { value: 'endswith', label: 'ends with' },
+      ]
+    }
   })
 
   constructor() {
@@ -246,6 +348,8 @@ export class CollectionsPage implements OnInit {
   selectField(field: string): void {
     this.newFilterField.set(field)
     this.showFieldAutocomplete.set(false)
+    // Reset operator to default when field changes
+    this.newFilterOperator.set('eq')
   }
 
   onFieldFocus(): void {
@@ -263,11 +367,13 @@ export class CollectionsPage implements OnInit {
 
   addFilter(): void {
     const field = this.newFilterField().trim()
+    const operator = this.newFilterOperator()
     const value = this.newFilterValue().trim()
 
     if (field && value) {
-      this.filters.update((filters) => [...filters, { field, value }])
+      this.filters.update((filters) => [...filters, { field, operator, value }])
       this.newFilterField.set('')
+      this.newFilterOperator.set('eq')
       this.newFilterValue.set('')
       this.reloadDocumentsWithFilters()
     }
@@ -288,9 +394,48 @@ export class CollectionsPage implements OnInit {
 
   private buildFilterParams(): Record<string, string> {
     const params: Record<string, string> = {}
-    this.filters().forEach((filter) => {
-      params[filter.field] = filter.value
-    })
+    const filters = this.filters()
+
+    if (filters.length > 0) {
+      // Build OData $filter query string
+      const filterExpressions = filters.map((filter) => {
+        const fieldType = this.fieldTypes()[filter.field] || 'string'
+        let formattedValue: string | number
+
+        // Format value based on field type
+        if (fieldType === 'number') {
+          // Numbers don't need quotes
+          formattedValue = +filter.value
+        } else if (fieldType === 'boolean') {
+          // Booleans are lowercase true/false without quotes
+          formattedValue = filter.value.toLowerCase()
+        } else if (fieldType === 'date') {
+          // Dates should be in ISO format without quotes (or with quotes depending on OData version)
+          formattedValue = filter.value
+        } else {
+          // Strings need quotes and escaping
+          const escapedValue = filter.value.replace(/'/g, "''")
+          formattedValue = `'${escapedValue}'`
+        }
+
+        // Handle special string operators
+        if (
+          filter.operator === 'contains' ||
+          filter.operator === 'startswith' ||
+          filter.operator === 'endswith'
+        ) {
+          const escapedValue = filter.value.replace(/'/g, "''")
+          return `${filter.operator}(${filter.field}, '${escapedValue}')`
+        }
+
+        // Standard comparison operators
+        return `${filter.field} ${filter.operator} ${formattedValue}`
+      })
+
+      // Combine multiple filters with 'and' operator
+      params['$filter'] = filterExpressions.join(' and ')
+    }
+
     return params
   }
 
@@ -330,12 +475,16 @@ export class CollectionsPage implements OnInit {
     try {
       const filterParams = this.buildFilterParams()
       const response = await this.apiService.getDocuments(collection, {
-        skip,
-        limit: 20,
+        $skip: skip,
+        $top: 20,
         ...filterParams,
       })
       if (skip === 0) {
         this.documents.set(response.data)
+
+        if (!this.initialDocuments().length) {
+          this.initialDocuments.set(response.data)
+        }
       } else {
         this.documents.update((docs) => [...docs, ...response.data])
       }
@@ -356,8 +505,8 @@ export class CollectionsPage implements OnInit {
       try {
         const filterParams = this.buildFilterParams()
         const response = await this.apiService.getDocuments(collection, {
-          skip: nextSkip,
-          limit: 20,
+          $skip: nextSkip,
+          $top: 20,
           ...filterParams,
         })
         this.documents.update((docs) => [...docs, ...response.data])

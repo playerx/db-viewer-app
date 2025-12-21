@@ -5,6 +5,7 @@ export interface PaginationParams {
 
 export interface FilterItem {
   field: string
+  operator: string
   value: string
 }
 

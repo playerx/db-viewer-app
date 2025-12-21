@@ -108,6 +108,17 @@
             </div>
             }
           </div>
+          <ion-item class="filterInput operatorInput">
+            <ion-select [value]="newFilterOperator()"
+                        (ionChange)="newFilterOperator.set($any($event.detail).value)"
+                        label="Operator"
+                        labelPlacement="floating"
+                        interface="popover">
+              @for (op of availableOperators(); track op.value) {
+              <ion-select-option [value]="op.value">{{ op.label }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
           <ion-item class="filterInput">
             <ion-input [value]="newFilterValue()"
                        (ionInput)="newFilterValue.set($any($event.target).value)"
@@ -128,7 +139,7 @@
         <div class="activeFilters">
           @for (filter of filters(); track $index) {
           <ion-chip class="filterChip">
-            <ion-label>{{ filter.field }}: {{ filter.value }}</ion-label>
+            <ion-label>{{ filter.field }} {{ filter.operator }} {{ filter.value }}</ion-label>
             <ion-icon name="close"
                       (click)="removeFilter($index)"></ion-icon>
           </ion-chip>
