@@ -119,7 +119,7 @@ export class DocumentDetailPage implements OnInit {
   originalJsonString = signal('')
 
   editorOptions = {
-    theme: 'vs-dark',
+    theme: 'vs-light',
     language: 'json',
     minimap: { enabled: false },
     automaticLayout: true,
