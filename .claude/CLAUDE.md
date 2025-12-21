@@ -34,6 +34,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - When using external templates/styles, use paths relative to the component TS file.
 - For components always create html file as a separate one and keep styles into the ts file. Avoid creating folder for the component
 - Always move pages into app/pages folder
+- Never use observables. Always use signals for state management.
 
 ## Styles
 
@@ -57,7 +58,6 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 
 - Keep templates simple and avoid complex logic
 - Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
-- Use the async pipe to handle observables
 - Do not assume globals like (`new Date()`) are available.
 - Do not write arrow functions in templates (they are not supported).
 

@@ -33,4 +33,9 @@ export const routes: Routes = [
       },
     ],
   },
+  {
+    path: 'document/:collection/:id',
+    loadComponent: () =>
+      import('./pages/document-detail.page').then((m) => m.DocumentDetailPage),
+  },
 ]

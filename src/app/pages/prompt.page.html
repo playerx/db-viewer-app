@@ -1,20 +1,116 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Prompt</ion-title>
+    <ion-title>AI Prompt</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-header collapse="condense"
-              class="centered">
+  <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large"> Prompt </ion-title>
+      <ion-title size="large">AI Prompt</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <main class="ion-padding">
-    <h2>Prompt Tab</h2>
-    <p>This is the events tab content.</p>
+  <div class="promptContainer">
+    <!-- Input Area -->
+    <div class="inputArea">
+      <ion-textarea
+        [(ngModel)]="prompt"
+        placeholder="Enter your database query in natural language..."
+        [rows]="3"
+        [disabled]="loading()"
+      ></ion-textarea>
 
-  </main>
+      <div style="display: flex; gap: 8px;">
+        <ion-button expand="block" (click)="executePrompt()" [disabled]="loading() || !prompt()">
+          @if (loading()) {
+            <ion-spinner slot="start"></ion-spinner>
+          }
+          {{ loading() ? 'Executing...' : 'Execute' }}
+        </ion-button>
+        <ion-button fill="outline" (click)="clearPrompt()" [disabled]="loading()">
+          Clear
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Real-time Updates -->
+    @if (updates().length > 0) {
+      <ion-card class="updateCard">
+        <ion-card-header>
+          <ion-card-title>Progress</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          @for (update of updates(); track $index) {
+            <div class="debugStep">
+              <strong>{{ update.step }}:</strong> {{ update.content }}
+            </div>
+          }
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Error Display -->
+    @if (error()) {
+      <ion-card color="danger">
+        <ion-card-header>
+          <ion-card-title>Error</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          {{ error() }}
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Result Display -->
+    @if (result()) {
+      <ion-card class="resultCard">
+        <ion-card-header>
+          <ion-card-title>Result</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>{{ result() }}</p>
+
+          @if (debugSteps().length > 0) {
+            <ion-button fill="clear" size="small" (click)="toggleDebug()">
+              {{ showDebug() ? 'Hide' : 'Show' }} Debug Info
+              <ion-badge slot="end">{{ debugSteps().length }}</ion-badge>
+            </ion-button>
+
+            @if (showDebug()) {
+              <div style="margin-top: 16px;">
+                @for (step of debugSteps(); track step.index) {
+                  <div class="debugStep">
+                    <strong>{{ step.step }}:</strong> {{ step.content }}
+                  </div>
+                }
+              </div>
+            }
+          }
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- History -->
+    @if (history().length > 0) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Recent Prompts</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            @for (item of history(); track $index) {
+              <ion-item class="historyItem" (click)="loadFromHistory(item)">
+                <ion-label>
+                  <h3>{{ item.prompt }}</h3>
+                  <p>{{ item.result }}</p>
+                  <p class="timestamp">{{ item.timestamp | date:'short' }}</p>
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    }
+  </div>
 </ion-content>
