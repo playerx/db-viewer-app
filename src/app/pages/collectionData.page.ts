@@ -31,7 +31,7 @@ import { addIcons } from 'ionicons'
 import { chevronForward } from 'ionicons/icons'
 
 @Component({
-  selector: 'app-data',
+  selector: 'app-collection-data',
   imports: [
     IonHeader,
     IonToolbar,
@@ -52,7 +52,7 @@ import { chevronForward } from 'ionicons/icons'
     IonButtons,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './data.page.html',
+  templateUrl: './collectionData.page.html',
   styles: `
     .documentItem {
       cursor: pointer;
@@ -81,7 +81,7 @@ import { chevronForward } from 'ionicons/icons'
     }
   `,
 })
-export class DataPage implements OnInit {
+export class CollectionDataPage implements OnInit {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
   private readonly route = inject(ActivatedRoute)

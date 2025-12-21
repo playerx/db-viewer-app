@@ -54,7 +54,7 @@ import { ApiService } from '../services/api.service'
     JsonPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './document-detail.page.html',
+  templateUrl: './documentDetail.page.html',
   styles: `
     .detailContainer {
       padding: 16px;

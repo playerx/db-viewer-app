@@ -34,11 +34,11 @@ export const routes: Routes = [
   },
   {
     path: 'data/:collection',
-    loadComponent: () => import('./pages/data.page').then((m) => m.DataPage),
+    loadComponent: () => import('./pages/collectionData.page').then((m) => m.CollectionDataPage),
   },
   {
     path: 'document/:collection/:id',
     loadComponent: () =>
-      import('./pages/document-detail.page').then((m) => m.DocumentDetailPage),
+      import('./pages/documentDetail.page').then((m) => m.DocumentDetailPage),
   },
 ]
