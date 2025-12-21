@@ -12,25 +12,26 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   IonItem,
   IonLabel,
   IonList,
+  IonMenu,
+  IonMenuButton,
+  IonNote,
   IonRefresher,
   IonRefresherContent,
   IonSearchbar,
   IonSpinner,
+  IonSplitPane,
   IonTitle,
   IonToolbar,
-  IonSplitPane,
-  IonMenu,
-  IonChip,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
 } from '@ionic/angular/standalone'
 import { addIcons } from 'ionicons'
-import { chevronForward } from 'ionicons/icons'
-import { ApiService } from '../services/api.service'
+import { chevronForward, menu } from 'ionicons/icons'
 import { DocumentData, PaginationInfo } from '../models/api.types'
+import { ApiService } from '../services/api.service'
 
 @Component({
   selector: 'app-collections',
@@ -50,9 +51,10 @@ import { DocumentData, PaginationInfo } from '../models/api.types'
     IonButton,
     IonSplitPane,
     IonMenu,
-    IonChip,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
+    IonMenuButton,
+    IonNote,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './collections.page.html',
@@ -86,6 +88,19 @@ import { DocumentData, PaginationInfo } from '../models/api.types'
     .selectedCollection {
       --background: var(--ion-color-light);
     }
+
+    .dateLabel {
+      flex: 0 0 auto;
+      text-align: right;
+      margin-right: 8px;
+
+      p {
+        font-size: 12px;
+        color: var(--ion-color-medium);
+        margin: 0;
+        white-space: nowrap;
+      }
+    }
   `,
 })
 export class CollectionsPage implements OnInit {
@@ -110,7 +125,7 @@ export class CollectionsPage implements OnInit {
   })
 
   constructor() {
-    addIcons({ chevronForward })
+    addIcons({ chevronForward, menu })
   }
 
   ngOnInit(): void {
@@ -146,11 +161,14 @@ export class CollectionsPage implements OnInit {
     this.documentsLoading.set(true)
     this.documentsError.set(null)
     try {
-      const response = await this.apiService.getDocuments(collection, { skip, limit: 20 })
+      const response = await this.apiService.getDocuments(collection, {
+        skip,
+        limit: 20,
+      })
       if (skip === 0) {
         this.documents.set(response.data)
       } else {
-        this.documents.update(docs => [...docs, ...response.data])
+        this.documents.update((docs) => [...docs, ...response.data])
       }
       this.pagination.set(response.pagination)
       this.documentsLoading.set(false)
@@ -167,8 +185,11 @@ export class CollectionsPage implements OnInit {
     if (pagination && pagination.hasMore && collection) {
       const nextSkip = pagination.skip + pagination.limit
       try {
-        const response = await this.apiService.getDocuments(collection, { skip: nextSkip, limit: 20 })
-        this.documents.update(docs => [...docs, ...response.data])
+        const response = await this.apiService.getDocuments(collection, {
+          skip: nextSkip,
+          limit: 20,
+        })
+        this.documents.update((docs) => [...docs, ...response.data])
         this.pagination.set(response.pagination)
         ;(event.target as HTMLIonInfiniteScrollElement).complete()
       } catch {
@@ -203,8 +224,31 @@ export class CollectionsPage implements OnInit {
     }, 1000)
   }
 
-  getDocumentPreview(doc: DocumentData): string {
-    const { _id, ...rest } = doc
-    return JSON.stringify(rest)
+  getDocumentName(doc: DocumentData): string {
+    return (doc as any).name || ''
+  }
+
+  getDocumentEmail(doc: DocumentData): string {
+    return (doc as any).email || ''
+  }
+
+  getDocumentUpdateDate(doc: DocumentData): string {
+    const updatedAt = (doc as any).updatedAt || (doc as any).updated_at
+    if (!updatedAt) return ''
+
+    const date = new Date(updatedAt)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) {
+      return 'Today'
+    } else if (diffDays === 1) {
+      return 'Yesterday'
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`
+    } else {
+      return date.toLocaleDateString()
+    }
   }
 }
