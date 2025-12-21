@@ -34,19 +34,13 @@
     }
 
     @if (document() && !error()) {
-    <!-- JSON Editor -->
-    <!-- <ion-card>
-      <ion-card-header>
-        <ion-card-title>Edit Document</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-
-      </ion-card-content>
-    </ion-card> -->
-    <textarea name="jsonEditor"
-              class="jsonEditor"
-              [(ngModel)]="jsonString"
-              placeholder="Enter valid JSON"></textarea>
+    <div class="monacoEditorContainer">
+      <nu-monaco-editor #editor
+                        [(ngModel)]="jsonString"
+                        (event)="onEditorInit($event)"
+                        [options]="editorOptions"
+                        [height]="'100%'"></nu-monaco-editor>
+    </div>
 
     <div class="actionButtons">
       <ion-button expand="block"

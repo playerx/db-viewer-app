@@ -5,6 +5,7 @@ import {
   inject,
   OnInit,
   signal,
+  viewChild,
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
@@ -23,6 +24,10 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone'
+import {
+  NuMonacoEditorComponent,
+  NuMonacoEditorEvent,
+} from '@ng-util/monaco-editor'
 import { DocumentData } from '../models/api.types'
 import { ApiService } from '../services/api.service'
 
@@ -43,12 +48,12 @@ import { ApiService } from '../services/api.service'
     IonSpinner,
     IonTextarea,
     FormsModule,
+    NuMonacoEditorComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './documentDetail.page.html',
   styles: `
     .detailContainer {
-      padding: 16px;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -74,6 +79,13 @@ import { ApiService } from '../services/api.service'
       border: 1px solid #e0e0e0;
     }
 
+    .monacoEditorContainer {
+      flex: 1;
+      min-height: 400px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+
     .actionButtons {
       display: flex;
       gap: 8px;
@@ -96,6 +108,8 @@ export class DocumentDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute)
   private readonly router = inject(Router)
 
+  editor = viewChild<monaco.editor.IStandaloneCodeEditor>('editor')
+
   collection = signal<string>('')
   documentId = signal<string>('')
   document = signal<DocumentData | null>(null)
@@ -103,6 +117,16 @@ export class DocumentDetailPage implements OnInit {
   error = signal<string | null>(null)
   jsonString = signal('')
   originalJsonString = signal('')
+
+  editorOptions = {
+    theme: 'vs-dark',
+    language: 'json',
+    minimap: { enabled: false },
+    automaticLayout: true,
+    formatOnPaste: true,
+    formatOnType: true,
+    fontSize: 14,
+  }
 
   hasChanges = computed(() => {
     return this.jsonString() !== this.originalJsonString()
@@ -116,6 +140,14 @@ export class DocumentDetailPage implements OnInit {
       this.collection.set(collection)
       this.documentId.set(id)
       this.loadDocument()
+    }
+  }
+
+  onEditorInit(e: NuMonacoEditorEvent) {
+    if (e.type === 'init') {
+      e.editor?.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () =>
+        this.saveDocument()
+      )
     }
   }
 
@@ -161,7 +193,7 @@ export class DocumentDetailPage implements OnInit {
       this.jsonString.set(jsonStr)
       this.originalJsonString.set(jsonStr)
       this.loading.set(false)
-      alert('Document updated successfully')
+      // alert('Document updated successfully')
     } catch (err) {
       this.loading.set(false)
       console.error(err)
