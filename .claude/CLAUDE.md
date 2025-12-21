@@ -32,6 +32,8 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Do NOT use `ngClass`, use `class` bindings instead
 - Do NOT use `ngStyle`, use `style` bindings instead
 - When using external templates/styles, use paths relative to the component TS file.
+- For components always create html file as a separate one and keep styles into the ts file. Avoid creating folder for the component
+- Always move pages into app/pages folder
 
 ## Styles
 
