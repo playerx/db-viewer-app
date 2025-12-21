@@ -8,8 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'tabs',
-    loadComponent: () =>
-      import('./pages/tabs.page').then((m) => m.TabsPage),
+    loadComponent: () => import('./pages/tabs.page').then((m) => m.TabsPage),
     children: [
       {
         path: '',
@@ -22,9 +21,9 @@ export const routes: Routes = [
           import('./pages/prompt.page').then((m) => m.PromptPage),
       },
       {
-        path: 'data',
+        path: 'collection',
         loadComponent: () =>
-          import('./pages/data.page').then((m) => m.DataPage),
+          import('./pages/collection.page').then((m) => m.CollectionPage),
       },
       {
         path: 'events',
@@ -32,6 +31,10 @@ export const routes: Routes = [
           import('./pages/events.page').then((m) => m.EventsPage),
       },
     ],
+  },
+  {
+    path: 'data/:collection',
+    loadComponent: () => import('./pages/data.page').then((m) => m.DataPage),
   },
   {
     path: 'document/:collection/:id',
