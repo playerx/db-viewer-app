@@ -59,6 +59,14 @@
           Select a Collection
           }
         </ion-title>
+        @if (selectedCollection()) {
+        <ion-buttons slot="end">
+          <ion-button (click)="toggleFilters()">
+            <ion-icon slot="icon-only"
+                      name="filter-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        }
       </ion-toolbar>
     </ion-header>
 
@@ -74,6 +82,61 @@
           <ion-title size="large">{{ selectedCollection() }}</ion-title>
         </ion-toolbar>
       </ion-header>
+
+      <!-- Filters Section -->
+      @if (showFilters()) {
+      <div class="filtersContainer">
+        <div class="filterInputs">
+          <div class="fieldInputWrapper">
+            <ion-item class="filterInput">
+              <ion-input [value]="newFilterField()"
+                         (ionInput)="newFilterField.set($any($event.target).value)"
+                         (ionFocus)="onFieldFocus()"
+                         (ionBlur)="onFieldBlur()"
+                         placeholder="Field name"
+                         label="Field"
+                         labelPlacement="floating"></ion-input>
+            </ion-item>
+            @if (showFieldAutocomplete() && filteredFields().length > 0) {
+            <div class="autocompleteDropdown">
+              @for (field of filteredFields(); track field) {
+              <div class="autocompleteItem"
+                   (click)="selectField(field)">
+                {{ field }}
+              </div>
+              }
+            </div>
+            }
+          </div>
+          <ion-item class="filterInput">
+            <ion-input [value]="newFilterValue()"
+                       (ionInput)="newFilterValue.set($any($event.target).value)"
+                       placeholder="Filter value"
+                       label="Value"
+                       labelPlacement="floating"
+                       (keyup.enter)="addFilter()"></ion-input>
+          </ion-item>
+          <ion-button (click)="addFilter()"
+                      [disabled]="!newFilterField() || !newFilterValue()"
+                      class="addFilterButton">
+            <ion-icon slot="icon-only"
+                      name="add"></ion-icon>
+          </ion-button>
+        </div>
+
+        @if (filters().length > 0) {
+        <div class="activeFilters">
+          @for (filter of filters(); track $index) {
+          <ion-chip class="filterChip">
+            <ion-label>{{ filter.field }}: {{ filter.value }}</ion-label>
+            <ion-icon name="close"
+                      (click)="removeFilter($index)"></ion-icon>
+          </ion-chip>
+          }
+        </div>
+        }
+      </div>
+      }
 
       @if (documentsLoading() && documents().length === 0) {
       <div class="loadingContainer">

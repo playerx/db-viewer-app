@@ -9,11 +9,14 @@ import {
 import { Router } from '@angular/router'
 import {
   IonButton,
+  IonButtons,
+  IonChip,
   IonContent,
   IonHeader,
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonInput,
   IonItem,
   IonLabel,
   IonList,
@@ -29,8 +32,8 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone'
 import { addIcons } from 'ionicons'
-import { chevronForward, menu } from 'ionicons/icons'
-import { DocumentData, PaginationInfo } from '../models/api.types'
+import { add, chevronForward, close, filterOutline, menu } from 'ionicons/icons'
+import { DocumentData, FilterItem, PaginationInfo } from '../models/api.types'
 import { ApiService } from '../services/api.service'
 
 @Component({
@@ -49,12 +52,15 @@ import { ApiService } from '../services/api.service'
     IonLabel,
     IonIcon,
     IonButton,
+    IonButtons,
     IonSplitPane,
     IonMenu,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
     IonMenuButton,
     IonNote,
+    IonInput,
+    IonChip,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './collections.page.html',
@@ -101,6 +107,80 @@ import { ApiService } from '../services/api.service'
         white-space: nowrap;
       }
     }
+
+    .filtersContainer {
+      padding: 16px;
+      border-bottom: 1px solid var(--ion-color-light);
+      background: var(--ion-color-light-tint);
+    }
+
+    .filterInputs {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      margin-bottom: 12px;
+
+      .fieldInputWrapper {
+        flex: 1;
+        position: relative;
+      }
+
+      .filterInput {
+        flex: 1;
+        --background: var(--ion-color-white, #fff);
+      }
+
+      .addFilterButton {
+        flex-shrink: 0;
+        height: 40px;
+        margin: 0;
+      }
+    }
+
+    .autocompleteDropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--ion-color-white, #fff);
+      border: 1px solid var(--ion-color-light);
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      margin-top: 4px;
+
+      .autocompleteItem {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--ion-color-light-shade);
+
+        &:hover {
+          background: var(--ion-color-light);
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+
+    .activeFilters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+
+      .filterChip {
+        cursor: pointer;
+
+        ion-icon {
+          cursor: pointer;
+          margin-left: 4px;
+        }
+      }
+    }
   `,
 })
 export class CollectionsPage implements OnInit {
@@ -118,14 +198,100 @@ export class CollectionsPage implements OnInit {
   documentsLoading = signal(false)
   documentsError = signal<string | null>(null)
 
+  filters = signal<FilterItem[]>([])
+  newFilterField = signal('')
+  newFilterValue = signal('')
+  showFilters = signal(false)
+  showFieldAutocomplete = signal(false)
+
   filteredCollections = computed(() => {
     const query = this.searchQuery().toLowerCase()
     if (!query) return this.collections()
     return this.collections().filter((c) => c.toLowerCase().includes(query))
   })
 
+  availableFields = computed(() => {
+    const docs = this.documents()
+    if (docs.length === 0) return []
+
+    const fieldSet = new Set<string>()
+    docs.forEach((doc) => {
+      Object.keys(doc).forEach((key) => fieldSet.add(key))
+    })
+
+    return Array.from(fieldSet).sort()
+  })
+
+  filteredFields = computed(() => {
+    const query = this.newFilterField().toLowerCase()
+    const fields = this.availableFields()
+    if (!query) return fields
+    return fields.filter((f) => f.toLowerCase().includes(query))
+  })
+
   constructor() {
-    addIcons({ chevronForward, menu })
+    addIcons({
+      chevronForward,
+      menu,
+      close,
+      add,
+      filterOutline,
+    })
+  }
+
+  toggleFilters(): void {
+    this.showFilters.update((show) => !show)
+  }
+
+  selectField(field: string): void {
+    this.newFilterField.set(field)
+    this.showFieldAutocomplete.set(false)
+  }
+
+  onFieldFocus(): void {
+    if (this.availableFields().length > 0) {
+      this.showFieldAutocomplete.set(true)
+    }
+  }
+
+  onFieldBlur(): void {
+    // Delay to allow click on suggestion
+    setTimeout(() => {
+      this.showFieldAutocomplete.set(false)
+    }, 200)
+  }
+
+  addFilter(): void {
+    const field = this.newFilterField().trim()
+    const value = this.newFilterValue().trim()
+
+    if (field && value) {
+      this.filters.update((filters) => [...filters, { field, value }])
+      this.newFilterField.set('')
+      this.newFilterValue.set('')
+      this.reloadDocumentsWithFilters()
+    }
+  }
+
+  removeFilter(index: number): void {
+    this.filters.update((filters) => filters.filter((_, i) => i !== index))
+    this.reloadDocumentsWithFilters()
+  }
+
+  private reloadDocumentsWithFilters(): void {
+    const collection = this.selectedCollection()
+    if (collection) {
+      this.documents.set([])
+      this.loadDocuments(collection)
+    }
+  }
+
+  private buildFilterParams(): Record<string, string> {
+    const params: Record<string, string> = {}
+    this.filters().forEach((filter) => {
+      params[filter.field] = filter.value
+    })
+    return params
   }
 
   ngOnInit(): void {
@@ -154,6 +320,7 @@ export class CollectionsPage implements OnInit {
   async selectCollection(collection: string): Promise<void> {
     this.selectedCollection.set(collection)
     this.documents.set([])
+    this.filters.set([])
     this.loadDocuments(collection)
   }
 
@@ -161,9 +328,11 @@ export class CollectionsPage implements OnInit {
     this.documentsLoading.set(true)
     this.documentsError.set(null)
     try {
+      const filterParams = this.buildFilterParams()
       const response = await this.apiService.getDocuments(collection, {
         skip,
         limit: 20,
+        ...filterParams,
       })
       if (skip === 0) {
         this.documents.set(response.data)
@@ -185,9 +354,11 @@ export class CollectionsPage implements OnInit {
     if (pagination && pagination.hasMore && collection) {
       const nextSkip = pagination.skip + pagination.limit
       try {
+        const filterParams = this.buildFilterParams()
         const response = await this.apiService.getDocuments(collection, {
           skip: nextSkip,
           limit: 20,
+          ...filterParams,
         })
         this.documents.update((docs) => [...docs, ...response.data])
         this.pagination.set(response.pagination)

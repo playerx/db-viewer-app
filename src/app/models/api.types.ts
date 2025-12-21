@@ -3,6 +3,11 @@ export interface PaginationParams {
   limit?: number
 }
 
+export interface FilterItem {
+  field: string
+  value: string
+}
+
 export interface PaginationInfo {
   skip: number
   limit: number
