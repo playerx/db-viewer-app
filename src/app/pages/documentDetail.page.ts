@@ -1,7 +1,7 @@
-import { JsonPipe } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   OnInit,
   signal,
@@ -18,10 +18,6 @@ import {
   IonCardTitle,
   IonContent,
   IonHeader,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
   IonSpinner,
   IonTextarea,
   IonTitle,
@@ -46,18 +42,16 @@ import { ApiService } from '../services/api.service'
     IonCardContent,
     IonSpinner,
     IonTextarea,
-    IonItem,
-    IonLabel,
-    IonInput,
-    IonList,
     FormsModule,
-    JsonPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './documentDetail.page.html',
   styles: `
     .detailContainer {
       padding: 16px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
     .loadingContainer {
@@ -76,17 +70,15 @@ import { ApiService } from '../services/api.service'
     .jsonEditor {
       font-family: monospace;
       font-size: 14px;
-      min-height: 300px;
-    }
-
-    .fieldItem {
-      margin-bottom: 12px;
+      flex: 1;
+      border: 1px solid #e0e0e0;
     }
 
     .actionButtons {
       display: flex;
       gap: 8px;
       margin-top: 16px;
+      justify-content: flex-end;
     }
 
     .readOnlyField {
@@ -109,10 +101,12 @@ export class DocumentDetailPage implements OnInit {
   document = signal<DocumentData | null>(null)
   loading = signal(false)
   error = signal<string | null>(null)
-  editMode = signal(false)
-  jsonEditMode = signal(false)
   jsonString = signal('')
-  editedDocument = signal<DocumentData>({})
+  originalJsonString = signal('')
+
+  hasChanges = computed(() => {
+    return this.jsonString() !== this.originalJsonString()
+  })
 
   ngOnInit(): void {
     const collection = this.route.snapshot.paramMap.get('collection')
@@ -129,10 +123,14 @@ export class DocumentDetailPage implements OnInit {
     this.loading.set(true)
     this.error.set(null)
     try {
-      const doc = await this.apiService.getDocumentById(this.collection(), this.documentId())
+      const doc = await this.apiService.getDocumentById(
+        this.collection(),
+        this.documentId()
+      )
       this.document.set(doc)
-      this.editedDocument.set({ ...doc })
-      this.jsonString.set(JSON.stringify(doc, null, 2))
+      const jsonStr = JSON.stringify(doc, null, 2)
+      this.jsonString.set(jsonStr)
+      this.originalJsonString.set(jsonStr)
       this.loading.set(false)
     } catch (err) {
       this.error.set('Failed to load document')
@@ -141,49 +139,27 @@ export class DocumentDetailPage implements OnInit {
     }
   }
 
-  toggleEditMode(): void {
-    if (this.editMode()) {
-      // Cancel edit
-      this.editMode.set(false)
-      this.jsonEditMode.set(false)
-      this.editedDocument.set({ ...this.document()! })
-      this.jsonString.set(JSON.stringify(this.document(), null, 2))
-    } else {
-      // Enter edit mode
-      this.editMode.set(true)
-    }
-  }
-
-  toggleJsonEditMode(): void {
-    if (!this.jsonEditMode()) {
-      this.jsonString.set(JSON.stringify(this.editedDocument(), null, 2))
-    }
-    this.jsonEditMode.update((mode) => !mode)
-  }
-
   async saveDocument(): Promise<void> {
     let dataToSave: Record<string, unknown>
 
-    if (this.jsonEditMode()) {
-      try {
-        dataToSave = JSON.parse(this.jsonString())
-      } catch (err) {
-        alert('Invalid JSON format')
-        return
-      }
-    } else {
-      dataToSave = { ...this.editedDocument() }
-      // delete dataToSave._id // Don't send _id in update
+    try {
+      dataToSave = JSON.parse(this.jsonString())
+    } catch (err) {
+      alert('Invalid JSON format')
+      return
     }
 
     this.loading.set(true)
     try {
-      const updatedDoc = await this.apiService.updateDocument(this.collection(), this.documentId(), dataToSave)
+      const updatedDoc = await this.apiService.updateDocument(
+        this.collection(),
+        this.documentId(),
+        dataToSave
+      )
       this.document.set(updatedDoc)
-      this.editedDocument.set({ ...updatedDoc })
-      this.jsonString.set(JSON.stringify(updatedDoc, null, 2))
-      this.editMode.set(false)
-      this.jsonEditMode.set(false)
+      const jsonStr = JSON.stringify(updatedDoc, null, 2)
+      this.jsonString.set(jsonStr)
+      this.originalJsonString.set(jsonStr)
       this.loading.set(false)
       alert('Document updated successfully')
     } catch (err) {
@@ -211,37 +187,6 @@ export class DocumentDetailPage implements OnInit {
       this.loading.set(false)
       console.error(err)
       alert('Failed to delete document')
-    }
-  }
-
-  getDocumentKeys(): string[] {
-    const doc = this.editedDocument()
-    return Object.keys(doc).filter((key) => key !== '_id')
-  }
-
-  updateField(key: string, value: string): void {
-    this.editedDocument.update((doc) => ({
-      ...doc,
-      [key]: this.parseValue(value),
-    }))
-  }
-
-  private parseValue(value: string): unknown {
-    // Try to parse as number
-    const num = Number(value)
-    if (!isNaN(num) && value.trim() !== '') {
-      return num
-    }
-
-    // Try to parse as boolean
-    if (value.toLowerCase() === 'true') return true
-    if (value.toLowerCase() === 'false') return false
-
-    // Try to parse as JSON
-    try {
-      return JSON.parse(value)
-    } catch {
-      return value
     }
   }
 }
