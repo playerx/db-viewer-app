@@ -105,7 +105,36 @@
         @if (item.result) {
         <div class="queryResult">
           <strong>Result:</strong>
+          @if (isArrayWithIds(item)) {
+          <ion-list class="resultList">
+            @for (doc of getResultDocuments(item); track doc._id) {
+            @if (doc._id) {
+            <ion-item button
+                      class="documentItem"
+                      (click)="viewDocument(doc._id, item.collection)">
+              <ion-label>
+                @if (getDocumentName(doc)) {
+                <h2>{{ getDocumentName(doc) }}</h2>
+                @if (getDocumentEmail(doc)) {
+                <p>{{ getDocumentEmail(doc) }}</p>
+                }
+                } @else {
+                <h2>{{ doc._id }}</h2>
+                }
+              </ion-label>
+              @if (getDocumentUpdateDate(doc)) {
+              <ion-note slot="end"
+                        class="dateLabel">
+                <p>{{ getDocumentUpdateDate(doc) }}</p>
+              </ion-note>
+              }
+            </ion-item>
+            }
+            }
+          </ion-list>
+          } @else {
           <pre>{{ item.result }}</pre>
+          }
         </div>
         }
         @if (item.error) {

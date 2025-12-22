@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
+import { Router } from '@angular/router'
 import {
   IonButton,
   IonCard,
@@ -20,15 +21,17 @@ import {
   IonItem,
   IonLabel,
   IonList,
+  IonNote,
   IonSpinner,
   IonTextarea,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone'
+import { EJSON, ObjectId } from 'bson'
 import { addIcons } from 'ionicons'
 import { chevronDown, chevronUp } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
-import { PromptUpdate } from '../services/api.types'
+import { DocumentData, PromptUpdate } from '../services/api.types'
 
 interface PromptHistory {
   prompt: string
@@ -39,6 +42,8 @@ type QueryItem = {
   id: string
   query: string
   result: string
+  resultData: any | null
+  collection: string | null
   isLoading: boolean
   error: string | null
 }
@@ -59,6 +64,7 @@ type QueryItem = {
     IonList,
     IonItem,
     IonLabel,
+    IonNote,
     IonSpinner,
     IonIcon,
     FormsModule,
@@ -207,10 +213,33 @@ type QueryItem = {
       font-size: 12px;
       color: var(--ion-color-medium);
     }
+
+    .resultList {
+      margin-top: 8px;
+      padding: 0;
+    }
+
+    .documentItem {
+      cursor: pointer;
+    }
+
+    .dateLabel {
+      flex: 0 0 auto;
+      text-align: right;
+      margin-right: 8px;
+
+      p {
+        font-size: 12px;
+        color: var(--ion-color-medium);
+        margin: 0;
+        white-space: nowrap;
+      }
+    }
   `,
 })
 export class PromptPage implements OnDestroy {
   private readonly apiService = inject(ApiService)
+  private readonly router = inject(Router)
   private eventSource: EventSource | null = null
 
   prompt = signal('')
@@ -261,6 +290,8 @@ export class PromptPage implements OnDestroy {
           id: crypto.randomUUID(),
           query: x,
           result: '',
+          resultData: null,
+          collection: this.extractCollectionFromQuery(x),
           isLoading: false,
           error: null,
         }))
@@ -346,6 +377,7 @@ export class PromptPage implements OnDestroy {
         const item = items?.find((x) => x.id === queryItem.id)
         if (item) {
           item.result = JSON.stringify(res[0], null, 2)
+          item.resultData = res[0]
           item.isLoading = false
         }
 
@@ -363,5 +395,62 @@ export class PromptPage implements OnDestroy {
         return items ? [...items] : null
       })
     }
+  }
+
+  isArrayWithIds(queryItem: QueryItem): boolean {
+    const data = queryItem.resultData
+    return (
+      Array.isArray(data) &&
+      data.length > 0 &&
+      data.every((item) => typeof item === 'object' && item !== null && '_id' in item)
+    )
+  }
+
+  getResultDocuments(queryItem: QueryItem): DocumentData[] {
+    if (!this.isArrayWithIds(queryItem)) {
+      return []
+    }
+    return queryItem.resultData.map((x: any) => EJSON.deserialize(x))
+  }
+
+  viewDocument(documentId: ObjectId | string, collection: string | null): void {
+    const id = typeof documentId === 'object' ? documentId.toHexString() : documentId
+
+    if (collection) {
+      this.router.navigate(['/document', collection, id])
+    }
+  }
+
+  getDocumentName(doc: DocumentData): string {
+    return (doc as any).name || ''
+  }
+
+  getDocumentEmail(doc: DocumentData): string {
+    return (doc as any).email || ''
+  }
+
+  getDocumentUpdateDate(doc: DocumentData): string {
+    const updatedAt = (doc as any).updatedAt || (doc as any).updated_at
+    if (!updatedAt) return ''
+
+    const date = new Date(updatedAt)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 0) {
+      return 'Today'
+    } else if (diffDays === 1) {
+      return 'Yesterday'
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`
+    } else {
+      return date.toLocaleDateString()
+    }
+  }
+
+  private extractCollectionFromQuery(query: string): string | null {
+    const match = query.match(/db\.(\w+)\./)
+    return match ? match[1] : null
   }
 }
