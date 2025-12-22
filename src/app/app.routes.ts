@@ -12,7 +12,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'prompt',
+        redirectTo: 'data',
         pathMatch: 'full',
       },
       {
@@ -21,7 +21,7 @@ export const routes: Routes = [
           import('./pages/prompt.page').then((m) => m.PromptPage),
       },
       {
-        path: 'collections',
+        path: 'data',
         loadComponent: () =>
           import('./pages/collections.page').then((m) => m.CollectionsPage),
       },

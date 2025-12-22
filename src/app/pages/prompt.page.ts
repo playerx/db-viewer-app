@@ -62,13 +62,13 @@ interface PromptHistory {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      padding: 16px;
     }
 
     .inputArea {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      padding: 16px;
     }
 
     .updateCard {

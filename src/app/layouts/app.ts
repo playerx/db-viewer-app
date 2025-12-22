@@ -1,5 +1,7 @@
 import { Component, signal } from '@angular/core'
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone'
+import { addIcons } from 'ionicons'
+import { documents } from 'ionicons/icons'
 
 @Component({
   selector: 'app-root',
@@ -8,4 +10,10 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone'
 })
 export class App {
   protected readonly title = signal('db-viewer-app')
+
+  constructor() {
+    addIcons({
+      documents,
+    })
+  }
 }
