@@ -32,7 +32,6 @@ import {
   IonSplitPane,
   IonTitle,
   IonToolbar,
-  MenuController,
 } from '@ionic/angular/standalone'
 import { EJSON, ObjectId } from 'bson'
 import { addIcons } from 'ionicons'
@@ -333,7 +332,7 @@ export class CollectionsPage implements OnInit {
     }
   })
 
-  constructor(private menuCtl: MenuController) {
+  constructor() {
     addIcons({
       chevronForward,
       menu,
@@ -469,7 +468,6 @@ export class CollectionsPage implements OnInit {
     this.documents.set([])
     this.filters.set([])
     this.loadDocuments(collection)
-    this.menuCtl.close()
   }
 
   async loadDocuments(collection: string, skip = 0): Promise<void> {
