@@ -130,10 +130,8 @@ type QueryItem = {
 
     .queryCard {
       margin-bottom: 12px;
-
-      ion-card-content {
-        padding: 12px;
-      }
+      border: 1px solid #e3e3e3;
+      padding: 10px;
     }
 
     .queryContent {

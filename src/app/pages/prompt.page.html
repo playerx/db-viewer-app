@@ -76,47 +76,45 @@
     <div class="queryList">
       <h3 class="queryListTitle">Generated Queries</h3>
       @for (item of result(); track item.id) {
-      <ion-card class="queryCard">
-        <ion-card-content>
-          <div class="queryContent">
-            <pre class="queryText">{{ item.query }}</pre>
-            @if (!item.result && !item.error) {
-            <ion-button size="small"
-                        (click)="runQuery(item)"
-                        [disabled]="item.isLoading">
-              @if (item.isLoading) {
-              <ion-spinner slot="start"></ion-spinner>
-              }
-              {{ item.isLoading ? 'Running...' : 'Run' }}
-            </ion-button>
+      <div class="queryCard">
+        <div class="queryContent">
+          <pre class="queryText">{{ item.query }}</pre>
+          @if (!item.result && !item.error) {
+          <ion-button size="small"
+                      (click)="runQuery(item)"
+                      [disabled]="item.isLoading">
+            @if (item.isLoading) {
+            <ion-spinner slot="start"></ion-spinner>
             }
-            @if (item.error) {
-            <ion-button size="small"
-                        color="danger"
-                        fill="outline"
-                        (click)="runQuery(item)"
-                        [disabled]="item.isLoading">
-              @if (item.isLoading) {
-              <ion-spinner slot="start"></ion-spinner>
-              }
-              {{ item.isLoading ? 'Running...' : 'Retry' }}
-            </ion-button>
-            }
-          </div>
-          @if (item.result) {
-          <div class="queryResult">
-            <strong>Result:</strong>
-            <pre>{{ item.result }}</pre>
-          </div>
+            {{ item.isLoading ? 'Running...' : 'Run' }}
+          </ion-button>
           }
           @if (item.error) {
-          <div class="queryError">
-            <strong>Error:</strong>
-            <p>{{ item.error }}</p>
-          </div>
+          <ion-button size="small"
+                      color="danger"
+                      fill="outline"
+                      (click)="runQuery(item)"
+                      [disabled]="item.isLoading">
+            @if (item.isLoading) {
+            <ion-spinner slot="start"></ion-spinner>
+            }
+            {{ item.isLoading ? 'Running...' : 'Retry' }}
+          </ion-button>
           }
-        </ion-card-content>
-      </ion-card>
+        </div>
+        @if (item.result) {
+        <div class="queryResult">
+          <strong>Result:</strong>
+          <pre>{{ item.result }}</pre>
+        </div>
+        }
+        @if (item.error) {
+        <div class="queryError">
+          <strong>Error:</strong>
+          <p>{{ item.error }}</p>
+        </div>
+        }
+      </div>
       }
     </div>
     }
