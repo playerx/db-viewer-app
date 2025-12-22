@@ -62,7 +62,7 @@ export interface PromptUpdate {
 }
 
 export interface PromptComplete {
-  result: string
+  result: string[]
   debug: DebugStep[]
 }
 

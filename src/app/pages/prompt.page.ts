@@ -15,6 +15,7 @@ import {
   IonCardHeader,
   IonCardTitle,
   IonContent,
+  IonFooter,
   IonHeader,
   IonItem,
   IonLabel,
@@ -25,13 +26,20 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone'
 import { ApiService } from '../services/api.service'
-import { DebugStep, PromptComplete, PromptUpdate } from '../services/api.types'
+import { DebugStep, PromptUpdate } from '../services/api.types'
 
 interface PromptHistory {
   prompt: string
-  result: string
+  result: string[]
   timestamp: Date
   debug?: DebugStep[]
+}
+
+type QueryItem = {
+  id: string
+  query: string
+  result: string
+  isLoading: boolean
 }
 
 @Component({
@@ -54,6 +62,7 @@ interface PromptHistory {
     IonSpinner,
     FormsModule,
     DatePipe,
+    IonFooter,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './prompt.page.html',
@@ -105,7 +114,7 @@ export class PromptPage implements OnDestroy {
   prompt = signal('')
   loading = signal(false)
   updates = signal<PromptUpdate[]>([])
-  result = signal<string | null>(null)
+  result = signal<QueryItem[] | null>(null)
   error = signal<string | null>(null)
   history = signal<PromptHistory[]>([])
   showDebug = signal(false)
@@ -135,18 +144,25 @@ export class PromptPage implements OnDestroy {
     })
 
     this.eventSource.addEventListener('complete', (event: MessageEvent) => {
-      const complete = JSON.parse(event.data) as PromptComplete
-      this.result.set(complete.result)
-      this.debugSteps.set(complete.debug || [])
+      const queries = JSON.parse(event.data) as string[]
+      this.result.set(
+        queries.map((x) => ({
+          id: crypto.randomUUID(),
+          query: x,
+          result: '',
+          isLoading: false,
+        }))
+      )
+      this.debugSteps.set([])
       this.loading.set(false)
 
       // Add to history
       this.history.update((hist) => [
         {
           prompt: promptText,
-          result: complete.result,
+          result: queries,
           timestamp: new Date(),
-          debug: complete.debug,
+          debug: [],
         },
         ...hist,
       ])
@@ -196,12 +212,36 @@ export class PromptPage implements OnDestroy {
 
   loadFromHistory(item: PromptHistory): void {
     this.prompt.set(item.prompt)
-    this.result.set(item.result)
+    // this.result.set(item.result)
     this.debugSteps.set(item.debug || [])
     this.updates.set([])
   }
 
   toggleDebug(): void {
     this.showDebug.update((show) => !show)
+  }
+
+  async runQuery(queryItem: QueryItem) {
+    this.result.update((items) => {
+      const item = items?.find((x) => x.id === queryItem.id)
+      if (item) {
+        item.isLoading = true
+      }
+
+      return items
+    })
+
+    const res = await this.apiService.runQueries([queryItem.query])
+
+    console.log({ res })
+    this.result.update((items) => {
+      const item = items?.find((x) => x.id === queryItem.id)
+      if (item) {
+        item.result = JSON.stringify(res[0], null, 2)
+        item.isLoading = false
+      }
+
+      return items ? [...items] : null
+    })
   }
 }

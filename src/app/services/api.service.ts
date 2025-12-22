@@ -81,6 +81,12 @@ export class ApiService {
     )
   }
 
+  async runQueries(queries: string[]) {
+    return firstValueFrom(
+      this.http.post<any[]>(`${this.baseUrl}/data/queries`, queries)
+    )
+  }
+
   // Events API
   async getEvents(
     params?: PaginationParams & { debug?: boolean }

@@ -38,34 +38,22 @@
 
     <!-- Result Display -->
     @if (result()) {
-    <ion-card class="resultCard">
-      <ion-card-header>
-        <ion-card-title>Result</ion-card-title>
-      </ion-card-header>
+    @for (item of result(); track item.id) {
+    <ion-card>
       <ion-card-content>
-        <pre>{{ result() }}</pre>
-
-        @if (debugSteps().length > 0) {
-        <ion-button fill="outline"
-                    size="small"
-                    (click)="toggleDebug()">
-          {{ showDebug() ? 'Hide' : 'Show' }} Debug Info
-          <ion-badge slot="end">{{ debugSteps().length }}</ion-badge>
-        </ion-button>
-
-        @if (showDebug()) {
-        <div style="margin-top: 16px;">
-          @for (step of debugSteps(); track step.index) {
-          <div class="debugStep">
-            <strong>{{ step.step }}:</strong>
-            <pre>{{ step.content }}</pre>
-          </div>
-          }
-        </div>
-        }
-        }
+        <pre>{{ item.query }}</pre>
       </ion-card-content>
+      <ion-footer>
+        @if (!item.result){
+        <ion-button [disabled]="item.isLoading"
+                    (click)="runQuery(item)">Run</ion-button>
+        }
+        @else {
+        <pre>{{item.result}}</pre>
+        }
+      </ion-footer>
     </ion-card>
+    }
     }
 
     <!-- Real-time Updates -->
