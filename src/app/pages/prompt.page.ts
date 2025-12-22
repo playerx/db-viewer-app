@@ -2,21 +2,21 @@ import { DatePipe } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   OnDestroy,
   signal,
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import {
-  IonBadge,
   IonButton,
   IonCard,
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
   IonContent,
-  IonFooter,
   IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -25,14 +25,14 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone'
+import { addIcons } from 'ionicons'
+import { chevronDown, chevronUp } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
-import { DebugStep, PromptUpdate } from '../services/api.types'
+import { PromptUpdate } from '../services/api.types'
 
 interface PromptHistory {
   prompt: string
-  result: string[]
   timestamp: Date
-  debug?: DebugStep[]
 }
 
 type QueryItem = {
@@ -40,6 +40,7 @@ type QueryItem = {
   query: string
   result: string
   isLoading: boolean
+  error: string | null
 }
 
 @Component({
@@ -58,11 +59,10 @@ type QueryItem = {
     IonList,
     IonItem,
     IonLabel,
-    IonBadge,
     IonSpinner,
+    IonIcon,
     FormsModule,
     DatePipe,
-    IonFooter,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './prompt.page.html',
@@ -80,21 +80,125 @@ type QueryItem = {
       padding: 16px;
     }
 
-    .updateCard {
-      margin-bottom: 8px;
+    .buttonContainer {
+      display: flex;
+      gap: 8px;
     }
 
-    .debugStep {
+    .compactProgress {
+      margin-top: 8px;
+      padding: 8px;
+      background: var(--ion-color-light);
+      border-radius: 8px;
+
+      ion-button {
+        margin: 0;
+        --padding-start: 0;
+        --padding-end: 0;
+      }
+    }
+
+    .progressDetails {
+      margin-top: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .stepDetail {
       font-family: monospace;
       font-size: 12px;
       padding: 8px;
-      background: var(--ion-color-light);
+      background: var(--ion-background-color);
       border-radius: 4px;
       margin: 4px 0;
+
+      pre {
+        margin: 4px 0 0 0;
+        white-space: pre-wrap;
+      }
     }
 
-    .resultCard {
-      background: var(--ion-color-success-tint);
+    .queryList {
+      padding: 0 16px;
+    }
+
+    .queryListTitle {
+      margin: 16px 0 8px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .queryCard {
+      margin-bottom: 12px;
+
+      ion-card-content {
+        padding: 12px;
+      }
+    }
+
+    .queryContent {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+
+      ion-button {
+        flex-shrink: 0;
+      }
+    }
+
+    .queryText {
+      flex: 1;
+      margin: 0;
+      font-family: monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .queryResult {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ion-color-light);
+
+      strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      pre {
+        margin: 0;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--ion-color-light);
+        padding: 8px;
+        border-radius: 4px;
+      }
+    }
+
+    .queryError {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--ion-color-danger-shade);
+
+      strong {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--ion-color-danger);
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--ion-color-danger-shade);
+        background: rgba(var(--ion-color-danger-rgb), 0.1);
+        padding: 12px;
+        border-radius: 4px;
+        border-left: 3px solid var(--ion-color-danger);
+      }
     }
 
     .historyItem {
@@ -117,8 +221,18 @@ export class PromptPage implements OnDestroy {
   result = signal<QueryItem[] | null>(null)
   error = signal<string | null>(null)
   history = signal<PromptHistory[]>([])
-  showDebug = signal(false)
-  debugSteps = signal<DebugStep[]>([])
+  showProgressDetails = signal(false)
+
+  currentStep = computed(() => {
+    const allUpdates = this.updates()
+    if (allUpdates.length === 0) return ''
+    const latest = allUpdates[allUpdates.length - 1]
+    return latest.step
+  })
+
+  constructor() {
+    addIcons({ chevronDown, chevronUp })
+  }
 
   ngOnDestroy(): void {
     this.closeEventSource()
@@ -132,7 +246,6 @@ export class PromptPage implements OnDestroy {
     this.error.set(null)
     this.result.set(null)
     this.updates.set([])
-    this.debugSteps.set([])
     this.closeEventSource()
 
     const url = this.apiService.getPromptUrl(promptText)
@@ -151,18 +264,16 @@ export class PromptPage implements OnDestroy {
           query: x,
           result: '',
           isLoading: false,
+          error: null,
         }))
       )
-      this.debugSteps.set([])
       this.loading.set(false)
 
       // Add to history
       this.history.update((hist) => [
         {
           prompt: promptText,
-          result: queries,
           timestamp: new Date(),
-          debug: [],
         },
         ...hist,
       ])
@@ -207,18 +318,16 @@ export class PromptPage implements OnDestroy {
     this.result.set(null)
     this.error.set(null)
     this.updates.set([])
-    this.debugSteps.set([])
+    this.showProgressDetails.set(false)
   }
 
   loadFromHistory(item: PromptHistory): void {
     this.prompt.set(item.prompt)
-    // this.result.set(item.result)
-    this.debugSteps.set(item.debug || [])
     this.updates.set([])
   }
 
-  toggleDebug(): void {
-    this.showDebug.update((show) => !show)
+  toggleProgressDetails(): void {
+    this.showProgressDetails.update((show) => !show)
   }
 
   async runQuery(queryItem: QueryItem) {
@@ -226,22 +335,35 @@ export class PromptPage implements OnDestroy {
       const item = items?.find((x) => x.id === queryItem.id)
       if (item) {
         item.isLoading = true
+        item.error = null
       }
 
       return items
     })
 
-    const res = await this.apiService.runQueries([queryItem.query])
+    try {
+      const res = await this.apiService.runQueries([queryItem.query])
 
-    console.log({ res })
-    this.result.update((items) => {
-      const item = items?.find((x) => x.id === queryItem.id)
-      if (item) {
-        item.result = JSON.stringify(res[0], null, 2)
-        item.isLoading = false
-      }
+      this.result.update((items) => {
+        const item = items?.find((x) => x.id === queryItem.id)
+        if (item) {
+          item.result = JSON.stringify(res[0], null, 2)
+          item.isLoading = false
+        }
 
-      return items ? [...items] : null
-    })
+        return items ? [...items] : null
+      })
+    } catch (error) {
+      this.result.update((items) => {
+        const item = items?.find((x) => x.id === queryItem.id)
+        if (item) {
+          item.error =
+            error instanceof Error ? error.message : 'Failed to run query'
+          item.isLoading = false
+        }
+
+        return items ? [...items] : null
+      })
+    }
   }
 }
