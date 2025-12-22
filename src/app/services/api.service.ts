@@ -9,7 +9,7 @@ import {
   EventLog,
   EventsResponse,
   PaginationParams,
-} from '../models/api.types'
+} from './api.types'
 
 @Injectable({
   providedIn: 'root',

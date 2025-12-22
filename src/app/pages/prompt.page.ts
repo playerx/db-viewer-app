@@ -1,31 +1,31 @@
+import { DatePipe } from '@angular/common'
 import {
-  Component,
   ChangeDetectionStrategy,
-  signal,
+  Component,
   inject,
   OnDestroy,
+  signal,
 } from '@angular/core'
+import { FormsModule } from '@angular/forms'
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
+  IonBadge,
   IonButton,
-  IonTextarea,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonCardContent,
-  IonList,
+  IonContent,
+  IonHeader,
   IonItem,
   IonLabel,
-  IonBadge,
+  IonList,
   IonSpinner,
+  IonTextarea,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone'
-import { FormsModule } from '@angular/forms'
-import { DatePipe } from '@angular/common'
 import { ApiService } from '../services/api.service'
-import { PromptUpdate, PromptComplete, DebugStep } from '../models/api.types'
+import { DebugStep, PromptComplete, PromptUpdate } from '../services/api.types'
 
 interface PromptHistory {
   prompt: string
@@ -131,7 +131,7 @@ export class PromptPage implements OnDestroy {
 
     this.eventSource.addEventListener('update', (event: MessageEvent) => {
       const update = JSON.parse(event.data) as PromptUpdate
-      this.updates.update(updates => [...updates, update])
+      this.updates.update((updates) => [...updates, update])
     })
 
     this.eventSource.addEventListener('complete', (event: MessageEvent) => {
@@ -141,7 +141,7 @@ export class PromptPage implements OnDestroy {
       this.loading.set(false)
 
       // Add to history
-      this.history.update(hist => [
+      this.history.update((hist) => [
         {
           prompt: promptText,
           result: complete.result,
@@ -202,6 +202,6 @@ export class PromptPage implements OnDestroy {
   }
 
   toggleDebug(): void {
-    this.showDebug.update(show => !show)
+    this.showDebug.update((show) => !show)
   }
 }

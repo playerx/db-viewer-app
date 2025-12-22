@@ -30,8 +30,8 @@ import {
   IonToggle,
   IonToolbar,
 } from '@ionic/angular/standalone'
-import { EventLog, EventsResponse } from '../models/api.types'
 import { ApiService } from '../services/api.service'
+import { EventLog, EventsResponse } from '../services/api.types'
 
 @Component({
   selector: 'app-events',
@@ -76,14 +76,6 @@ import { ApiService } from '../services/api.service'
 
     .eventCard {
       margin-bottom: 12px;
-    }
-
-    .eventTypeUpdate {
-      --background: var(--ion-color-primary-tint);
-    }
-
-    .eventTypeDelete {
-      --background: var(--ion-color-danger-tint);
     }
 
     .debugSteps {

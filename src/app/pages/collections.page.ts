@@ -35,8 +35,8 @@ import {
 } from '@ionic/angular/standalone'
 import { addIcons } from 'ionicons'
 import { add, chevronForward, close, filterOutline, menu } from 'ionicons/icons'
-import { DocumentData, FilterItem, PaginationInfo } from '../models/api.types'
 import { ApiService } from '../services/api.service'
+import { DocumentData, FilterItem, PaginationInfo } from '../services/api.types'
 
 @Component({
   selector: 'app-collections',

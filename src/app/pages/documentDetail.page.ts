@@ -23,8 +23,8 @@ import {
   NuMonacoEditorComponent,
   NuMonacoEditorEvent,
 } from '@ng-util/monaco-editor'
-import { DocumentData } from '../models/api.types'
 import { ApiService } from '../services/api.service'
+import { DocumentData } from '../services/api.types'
 
 @Component({
   selector: 'app-document-detail',
@@ -79,7 +79,6 @@ import { ApiService } from '../services/api.service'
     .actionButtons {
       display: flex;
       gap: 8px;
-      margin-top: 16px;
       justify-content: flex-end;
     }
 

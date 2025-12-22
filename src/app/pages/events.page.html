@@ -5,7 +5,8 @@
 </ion-header>
 
 <ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+  <ion-refresher slot="fixed"
+                 (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
@@ -19,108 +20,110 @@
     <!-- Filter Bar -->
     <div class="filterBar">
       @for (type of eventTypes; track type) {
-        <ion-chip
-          [color]="selectedType() === type ? 'primary' : 'medium'"
-          (click)="selectType(type)"
-        >
-          <ion-label>{{ type }}</ion-label>
-        </ion-chip>
+      <ion-chip [color]="selectedType() === type ? 'primary' : 'medium'"
+                (click)="selectType(type)">
+        <ion-label>{{ type }}</ion-label>
+      </ion-chip>
       }
 
-      <ion-item lines="none" style="--padding-start: 0; --inner-padding-end: 0;">
+      <ion-item lines="none"
+                style="--padding-start: 0; --inner-padding-end: 0;">
         <ion-label>Show Debug</ion-label>
-        <ion-toggle [(ngModel)]="showDebug" (ionChange)="toggleDebug()"></ion-toggle>
+        <ion-toggle [(ngModel)]="showDebug"
+                    (ionChange)="toggleDebug()"></ion-toggle>
       </ion-item>
     </div>
 
     <!-- Loading State -->
     @if (loading() && events().length === 0) {
-      <div class="loadingContainer">
-        <ion-spinner></ion-spinner>
-      </div>
+    <div class="loadingContainer">
+      <ion-spinner></ion-spinner>
+    </div>
     }
 
     <!-- Error State -->
     @if (error()) {
-      <div class="emptyState">
-        <p>{{ error() }}</p>
-        <ion-button (click)="loadEvents()">Retry</ion-button>
-      </div>
+    <div class="emptyState">
+      <p>{{ error() }}</p>
+      <ion-button (click)="loadEvents()">Retry</ion-button>
+    </div>
     }
 
     <!-- Empty State -->
     @if (!loading() && !error() && filteredEvents().length === 0) {
-      <div class="emptyState">
-        <p>No events found</p>
-      </div>
+    <div class="emptyState">
+      <p>No events found</p>
+    </div>
     }
 
     <!-- Events List -->
     @if (!error() && filteredEvents().length > 0) {
-      @for (event of filteredEvents(); track event._id) {
-        <ion-item-sliding>
-          <ion-card class="eventCard" [class]="getEventCardClass(event.type)">
-            <ion-card-header>
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <ion-card-title>
-                  <ion-badge [color]="getEventColor(event.type)">
-                    {{ event.type }}
-                  </ion-badge>
-                </ion-card-title>
-                <span style="font-size: 12px; color: var(--ion-color-medium);">
-                  {{ event.timestamp | date:'short' }}
-                </span>
-              </div>
-            </ion-card-header>
+    @for (event of filteredEvents(); track event._id) {
+    <ion-item-sliding>
+      <ion-card class="eventCard"
+                [class]="getEventCardClass(event.type)">
+        <ion-card-header>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <ion-card-title>
+              <ion-badge [color]="getEventColor(event.type)">
+                {{ event.type }}
+              </ion-badge>
+            </ion-card-title>
+            <span style="font-size: 12px; color: var(--ion-color-medium);">
+              {{ event.timestamp | date:'short' }}
+            </span>
+          </div>
+        </ion-card-header>
 
-            <ion-card-content>
-              @if (event.type === 'UPDATE' || event.type === 'DELETE') {
-                <div class="metaInfo">
-                  <strong>Collection:</strong> {{ event.collection }}<br>
-                  <strong>Document ID:</strong> {{ event.documentId }}
-                </div>
+        <ion-card-content>
+          @if (event.type === 'UPDATE' || event.type === 'DELETE') {
+          <div class="metaInfo">
+            <strong>Collection:</strong> {{ event.collection }}<br>
+            <strong>Document ID:</strong> {{ event.documentId }}
+          </div>
 
-                @if (event.type === 'UPDATE' && event.data) {
-                  <div style="margin-top: 8px;">
-                    <strong>Updated Fields:</strong>
-                    <pre style="font-size: 12px; overflow-x: auto;">{{ event.data | json }}</pre>
-                  </div>
-                }
-              }
+          @if (event.type === 'UPDATE' && event.data) {
+          <div style="margin-top: 8px;">
+            <strong>Updated Fields:</strong>
+            <pre style="font-size: 12px; overflow-x: auto;">{{ event.data | json }}</pre>
+          </div>
+          }
+          }
 
-              @if (event.type === 'PROMPT') {
-                <div>
-                  <strong>Prompt:</strong>
-                  <p>{{ event.prompt }}</p>
-                </div>
-                @if (event.result) {
-                  <div style="margin-top: 8px;">
-                    <strong>Result:</strong>
-                    <p>{{ event.result }}</p>
-                  </div>
-                }
+          @if (event.type === 'PROMPT') {
+          <div>
+            <strong>Prompt:</strong>
+            <p>{{ event.prompt }}</p>
+          </div>
+          @if (event.result) {
+          <div style="margin-top: 8px;">
+            <strong>Result:</strong>
+            <pre style="font-size: 12px; overflow-x: auto;">{{ event.result }}</pre>
+          </div>
+          }
 
-                @if (event.debug && event.debug.length > 0) {
-                  <div class="debugSteps">
-                    <strong>Debug Steps ({{ event.debug.length }}):</strong>
-                    @for (step of event.debug; track step.index) {
-                      <div style="margin-top: 4px;">
-                        <strong>{{ step.step }}:</strong> {{ step.content }}
-                      </div>
-                    }
-                  </div>
-                }
-              }
-            </ion-card-content>
-          </ion-card>
+          @if (event.debug && event.debug.length > 0) {
+          <div class="debugSteps">
+            <strong>Debug Steps ({{ event.debug.length }}):</strong>
+            @for (step of event.debug; track step.index) {
+            <div style="margin-top: 4px;">
+              <strong>{{ step.step }}:</strong> {{ step.content }}
+            </div>
+            }
+          </div>
+          }
+          }
+        </ion-card-content>
+      </ion-card>
 
-          <ion-item-options side="end">
-            <ion-item-option color="danger" (click)="deleteEvent(event._id)">
-              Delete
-            </ion-item-option>
-          </ion-item-options>
-        </ion-item-sliding>
-      }
+      <ion-item-options side="end">
+        <ion-item-option color="danger"
+                         (click)="deleteEvent(event._id)">
+          Delete
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+    }
     }
   </div>
 </ion-content>

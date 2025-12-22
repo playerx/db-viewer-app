@@ -43,6 +43,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - use cammelCase class names
 - Try to use ionic components as much as possible
 - Avoid styling ionic components, try to keep them in their original styles.
+- NEVER do inline styles in html.
 
 ## Local Storage
 
