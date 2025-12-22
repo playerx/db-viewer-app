@@ -36,6 +36,7 @@
     "@ionic/angular": "^8.7.14",
     "@ionic/core": "^8.7.14",
     "@ng-util/monaco-editor": "^21.0.1",
+    "bson": "^7.0.0",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

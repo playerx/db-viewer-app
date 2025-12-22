@@ -1,3 +1,5 @@
+import { ObjectId } from 'bson'
+
 export interface PaginationParams {
   skip?: number
   limit?: number
@@ -17,7 +19,7 @@ export interface PaginationInfo {
 }
 
 export interface DocumentData {
-  _id?: string
+  _id?: ObjectId | string
   [key: string]: unknown
 }
 

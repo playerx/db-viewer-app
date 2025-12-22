@@ -107,7 +107,7 @@ export class DocumentDetailPage implements OnInit {
   jsonString = signal('')
   originalJsonString = signal('')
 
-  editorOptions = {
+  editorOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
     theme: 'vs-light',
     language: 'json',
     minimap: { enabled: false },
@@ -115,6 +115,7 @@ export class DocumentDetailPage implements OnInit {
     formatOnPaste: true,
     formatOnType: true,
     fontSize: 14,
+    tabSize: 2,
   }
 
   hasChanges = computed(() => {
@@ -149,7 +150,9 @@ export class DocumentDetailPage implements OnInit {
         this.documentId()
       )
       this.document.set(doc)
-      const jsonStr = JSON.stringify(doc, null, 2)
+      // Convert BSON types to Extended JSON format for editing
+      const jsonStr = JSON.stringify(doc)
+
       this.jsonString.set(jsonStr)
       this.originalJsonString.set(jsonStr)
       this.loading.set(false)
@@ -161,10 +164,11 @@ export class DocumentDetailPage implements OnInit {
   }
 
   async saveDocument(): Promise<void> {
-    let dataToSave: Record<string, unknown>
+    let dataToSave: unknown
 
     try {
-      dataToSave = JSON.parse(this.jsonString())
+      // Convert Extended JSON to BSON types for MongoDB
+      dataToSave = this.jsonString()
     } catch (err) {
       alert('Invalid JSON format')
       return
@@ -175,10 +179,12 @@ export class DocumentDetailPage implements OnInit {
       const updatedDoc = await this.apiService.updateDocument(
         this.collection(),
         this.documentId(),
-        dataToSave
+        dataToSave as Record<string, unknown>
       )
       this.document.set(updatedDoc)
-      const jsonStr = JSON.stringify(updatedDoc, null, 2)
+      // Convert BSON types back to Extended JSON format for editing
+      const jsonStr = JSON.stringify(updatedDoc)
+
       this.jsonString.set(jsonStr)
       this.originalJsonString.set(jsonStr)
       this.loading.set(false)

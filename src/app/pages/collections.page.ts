@@ -34,6 +34,7 @@ import {
   IonToolbar,
   MenuController,
 } from '@ionic/angular/standalone'
+import { EJSON, ObjectId } from 'bson'
 import { addIcons } from 'ionicons'
 import { add, chevronForward, close, filterOutline, menu } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
@@ -482,7 +483,7 @@ export class CollectionsPage implements OnInit {
         ...filterParams,
       })
       if (skip === 0) {
-        this.documents.set(response.data)
+        this.documents.set(response.data.map((x) => EJSON.deserialize(x)))
 
         if (!this.initialDocuments().length) {
           this.initialDocuments.set(response.data)
@@ -522,10 +523,13 @@ export class CollectionsPage implements OnInit {
     }
   }
 
-  viewDocument(documentId: string): void {
+  viewDocument(documentId: ObjectId | string): void {
+    const id =
+      typeof documentId === 'object' ? documentId.toHexString() : documentId
+
     const collection = this.selectedCollection()
     if (collection) {
-      this.router.navigate(['/document', collection, documentId])
+      this.router.navigate(['/document', collection, id])
     }
   }
 

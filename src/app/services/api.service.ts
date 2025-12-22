@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http'
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core'
 import { firstValueFrom } from 'rxjs'
 import { environment } from '../../environments/environment'
@@ -60,7 +60,12 @@ export class ApiService {
     return firstValueFrom(
       this.http.put<DocumentData>(
         `${this.baseUrl}/data/${collection}/${id}`,
-        data
+        data,
+        {
+          headers: new HttpHeaders({
+            'Content-Type': 'application/json',
+          }),
+        }
       )
     )
   }
