@@ -1,199 +1,220 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>AI Prompt</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-split-pane contentId="prompt-content">
+  <!-- Menu/Sidebar - Recent Queries -->
+  <ion-menu contentId="prompt-content"
+            menuId="promptMenu"
+            class="promptMenu"
+            #promptMenu>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>
+          <div>
+            <ion-icon name="time-outline"></ion-icon>
+            Recent Queries
+          </div>
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
 
-<ion-content>
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">AI Prompt</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div class="promptContainer">
-    <!-- Input Area -->
-    <div class="inputArea">
-      <ion-textarea [(ngModel)]="prompt"
-                    placeholder="Ask me anything about your database..."
-                    [autoGrow]="true"
-                    [rows]="3"
-                    [disabled]="loading()"></ion-textarea>
-
-      <div class="helperText">
-        <ion-icon name="bulb-outline"></ion-icon>
-        <span>Try: "Show me all users created this month" or "Find products with low stock"</span>
+    <ion-content>
+      @if (history().length === 0) {
+      <div class="emptyState">
+        <p>No recent queries yet</p>
       </div>
+      } @else {
+      <ion-list>
+        @for (item of history(); track $index) {
+        <ion-item button
+                  class="historyItem"
+                  (click)="loadFromHistory(item); promptMenu?.close();">
+          <ion-label>
+            <h3>{{ item.prompt }}</h3>
+            <p class="timestamp">{{ item.timestamp | date:'short' }}</p>
+          </ion-label>
+        </ion-item>
+        }
+      </ion-list>
+      }
+    </ion-content>
+  </ion-menu>
 
-      <div class="buttonContainer">
-        <ion-button expand="block"
-                    (click)="executePrompt()"
-                    [disabled]="loading() || !prompt()">
-          @if (loading()) {
-          <ion-spinner slot="start"></ion-spinner>
-          }
-          {{ loading() ? 'Processing...' : 'Execute Query' }}
-        </ion-button>
-        <ion-button fill="outline"
-                    (click)="clearPrompt()"
-                    [disabled]="loading()">
-          Clear
-        </ion-button>
-      </div>
+  <!-- Main Content -->
+  <div class="ion-page"
+       id="prompt-content">
+    <ion-header>
+      <ion-toolbar>
+        <ion-menu-button menu="promptMenu"
+                         slot="start"></ion-menu-button>
+        <ion-title>Talk to your DB</ion-title>
+      </ion-toolbar>
+    </ion-header>
 
-      <!-- Compact Progress Display -->
-      @if (loading() && updates().length > 0) {
-      <div class="compactProgress">
-        <ion-button fill="clear"
-                    size="small"
-                    (click)="toggleProgressDetails()">
-          {{ currentStep() }}
-          <ion-icon [name]="showProgressDetails() ? 'chevron-up' : 'chevron-down'"
-                    slot="end"></ion-icon>
-        </ion-button>
-        @if (showProgressDetails()) {
-        <div class="progressDetails">
-          @for (update of updates(); track $index) {
-          <div class="stepDetail">
-            <strong>{{ update.step }}:</strong>
-            <pre>{{ update.content }}</pre>
+    <ion-content>
+      <ion-header collapse="condense">
+        <ion-toolbar>
+          <ion-title size="large">Talk to your DB</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <div class="promptContainer">
+        <!-- Input Area -->
+        <div class="inputArea">
+          <ion-textarea [(ngModel)]="prompt"
+                        placeholder="Ask me anything about your database..."
+                        [autoGrow]="true"
+                        [rows]="3"
+                        [disabled]="loading()"></ion-textarea>
+
+          <div class="helperText">
+            <ion-icon name="bulb-outline"></ion-icon>
+            <span>Try: "Show me all users created this month" or "Find products with low stock"</span>
+          </div>
+
+          <div class="buttonContainer">
+            <ion-button expand="block"
+                        (click)="executePrompt()"
+                        [disabled]="loading() || !prompt()">
+              @if (loading()) {
+              <ion-spinner slot="start"></ion-spinner>
+              }
+              {{ loading() ? 'Processing...' : 'Execute Query' }}
+            </ion-button>
+            <ion-button fill="outline"
+                        (click)="clearPrompt()"
+                        [disabled]="loading()">
+              Clear
+            </ion-button>
+          </div>
+
+          <!-- Compact Progress Display -->
+          @if (loading() && updates().length > 0) {
+          <div class="compactProgress">
+            <ion-button fill="clear"
+                        size="small"
+                        (click)="toggleProgressDetails()">
+              {{ currentStep() }}
+              <ion-icon [name]="showProgressDetails() ? 'chevron-up' : 'chevron-down'"
+                        slot="end"></ion-icon>
+            </ion-button>
+            @if (showProgressDetails()) {
+            <div class="progressDetails">
+              @for (update of updates(); track $index) {
+              <div class="stepDetail">
+                <strong>{{ update.step }}:</strong>
+                <pre>{{ update.content }}</pre>
+              </div>
+              }
+            </div>
+            }
           </div>
           }
         </div>
+
+        <!-- Error Display -->
+        @if (error()) {
+        <ion-card color="danger">
+          <ion-card-header>
+            <ion-card-title>Error</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            {{ error() }}
+          </ion-card-content>
+        </ion-card>
         }
-      </div>
-      }
-    </div>
 
-    <!-- Error Display -->
-    @if (error()) {
-    <ion-card color="danger">
-      <ion-card-header>
-        <ion-card-title>Error</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        {{ error() }}
-      </ion-card-content>
-    </ion-card>
-    }
-
-    <!-- Query Results List -->
-    @if (result() && result()!.length > 0) {
-    <div class="queryList">
-      <h3 class="queryListTitle">Generated Queries</h3>
-      @for (item of result(); track item.id) {
-      <div class="queryCard">
-        <div class="queryContent">
-          <pre class="queryText">{{ item.query }}</pre>
-          <div class="queryActions">
-            <ion-button size="small"
-                        fill="clear"
-                        [class.copied]="copiedQueryId() === item.id"
-                        class="copyButton"
-                        (click)="copyQueryToClipboard(item)">
-              <ion-icon slot="icon-only"
-                        [name]="copiedQueryId() === item.id ? 'checkmark-circle' : 'clipboard'"></ion-icon>
-            </ion-button>
-            @if (!item.result && !item.error) {
-            <ion-button size="small"
-                        (click)="runQuery(item)"
-                        [disabled]="item.isLoading">
-              @if (item.isLoading) {
-              <ion-spinner slot="start"></ion-spinner>
+        <!-- Query Results List -->
+        @if (result() && result()!.length > 0) {
+        <div class="queryList">
+          <h3 class="queryListTitle">Generated Queries</h3>
+          @for (item of result(); track item.id) {
+          <div class="queryCard">
+            <div class="queryContent">
+              <pre class="queryText">{{ item.query }}</pre>
+              <div class="queryActions">
+                <ion-button size="small"
+                            fill="clear"
+                            [class.copied]="copiedQueryId() === item.id"
+                            class="copyButton"
+                            (click)="copyQueryToClipboard(item)">
+                  <ion-icon slot="icon-only"
+                            [name]="copiedQueryId() === item.id ? 'checkmark-circle' : 'clipboard'"></ion-icon>
+                </ion-button>
+                @if (!item.result && !item.error) {
+                <ion-button size="small"
+                            (click)="runQuery(item)"
+                            [disabled]="item.isLoading">
+                  @if (item.isLoading) {
+                  <ion-spinner slot="start"></ion-spinner>
+                  }
+                  {{ item.isLoading ? 'Running...' : 'Run' }}
+                </ion-button>
+                }
+                @if (item.error) {
+                <ion-button size="small"
+                            color="danger"
+                            fill="outline"
+                            (click)="runQuery(item)"
+                            [disabled]="item.isLoading">
+                  @if (item.isLoading) {
+                  <ion-spinner slot="start"></ion-spinner>
+                  }
+                  {{ item.isLoading ? 'Running...' : 'Retry' }}
+                </ion-button>
+                }
+              </div>
+            </div>
+            @if (item.result) {
+            <div class="queryResult">
+              <strong>
+                <ion-icon name="checkmark-circle"></ion-icon>
+                Result:
+              </strong>
+              @if (isArrayWithIds(item)) {
+              <ion-list class="resultList">
+                @for (doc of getResultDocuments(item); track doc._id) {
+                @if (doc._id) {
+                <ion-item button
+                          class="documentItem"
+                          (click)="viewDocument(doc._id, item.collection)">
+                  <ion-label>
+                    @if (getDocumentName(doc)) {
+                    <h2>{{ getDocumentName(doc) }}</h2>
+                    @if (getDocumentEmail(doc)) {
+                    <p>{{ getDocumentEmail(doc) }}</p>
+                    }
+                    } @else {
+                    <h2>{{ doc._id }}</h2>
+                    }
+                  </ion-label>
+                  @if (getDocumentUpdateDate(doc)) {
+                  <ion-note slot="end"
+                            class="dateLabel">
+                    <p>{{ getDocumentUpdateDate(doc) }}</p>
+                  </ion-note>
+                  }
+                </ion-item>
+                }
+                }
+              </ion-list>
+              } @else {
+              <pre>{{ item.result }}</pre>
               }
-              {{ item.isLoading ? 'Running...' : 'Run' }}
-            </ion-button>
+            </div>
             }
             @if (item.error) {
-            <ion-button size="small"
-                        color="danger"
-                        fill="outline"
-                        (click)="runQuery(item)"
-                        [disabled]="item.isLoading">
-              @if (item.isLoading) {
-              <ion-spinner slot="start"></ion-spinner>
-              }
-              {{ item.isLoading ? 'Running...' : 'Retry' }}
-            </ion-button>
+            <div class="queryError">
+              <strong>
+                <ion-icon name="close-circle"></ion-icon>
+                Error:
+              </strong>
+              <p>{{ item.error }}</p>
+            </div>
             }
           </div>
-        </div>
-        @if (item.result) {
-        <div class="queryResult">
-          <strong>
-            <ion-icon name="checkmark-circle"></ion-icon>
-            Result:
-          </strong>
-          @if (isArrayWithIds(item)) {
-          <ion-list class="resultList">
-            @for (doc of getResultDocuments(item); track doc._id) {
-            @if (doc._id) {
-            <ion-item button
-                      class="documentItem"
-                      (click)="viewDocument(doc._id, item.collection)">
-              <ion-label>
-                @if (getDocumentName(doc)) {
-                <h2>{{ getDocumentName(doc) }}</h2>
-                @if (getDocumentEmail(doc)) {
-                <p>{{ getDocumentEmail(doc) }}</p>
-                }
-                } @else {
-                <h2>{{ doc._id }}</h2>
-                }
-              </ion-label>
-              @if (getDocumentUpdateDate(doc)) {
-              <ion-note slot="end"
-                        class="dateLabel">
-                <p>{{ getDocumentUpdateDate(doc) }}</p>
-              </ion-note>
-              }
-            </ion-item>
-            }
-            }
-          </ion-list>
-          } @else {
-          <pre>{{ item.result }}</pre>
           }
         </div>
         }
-        @if (item.error) {
-        <div class="queryError">
-          <strong>
-            <ion-icon name="close-circle"></ion-icon>
-            Error:
-          </strong>
-          <p>{{ item.error }}</p>
-        </div>
-        }
-      </div>
-      }
-    </div>
-    }
 
-    <!-- History -->
-    @if (history().length > 0) {
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="time-outline"></ion-icon>
-          Recent Prompts
-        </ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          @for (item of history(); track $index) {
-          <ion-item class="historyItem"
-                    button
-                    (click)="loadFromHistory(item)">
-            <ion-label>
-              <h3>{{ item.prompt }}</h3>
-              <p class="timestamp">{{ item.timestamp | date:'short' }}</p>
-            </ion-label>
-          </ion-item>
-          }
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
-    }
+      </div>
+    </ion-content>
   </div>
-</ion-content>
+</ion-split-pane>

@@ -1,8 +1,8 @@
-<ion-split-pane contentId="main-content">
+<ion-split-pane contentId="data-content">
   <!-- Menu/Sidebar - Collections List -->
-  <ion-menu contentId="main-content"
-            side="end"
-            #menu>
+  <ion-menu contentId="data-content"
+            menuId="dataMenu"
+            #dataMenu>
     <ion-header>
       <ion-toolbar>
         <ion-title>Collections</ion-title>
@@ -36,7 +36,7 @@
       <ion-list>
         @for (collection of filteredCollections(); track collection) {
         <ion-item button
-                  (click)="selectCollection(collection); menu?.close();"
+                  (click)="selectCollection(collection); dataMenu?.close();"
                   [class.selectedCollection]="selectedCollection() === collection">
           <ion-label>{{ collection }}</ion-label>
         </ion-item>
@@ -48,10 +48,11 @@
 
   <!-- Main Content - Documents List -->
   <div class="ion-page"
-       id="main-content">
+       id="data-content">
     <ion-header>
       <ion-toolbar>
-        <ion-menu-button slot="start"></ion-menu-button>
+        <ion-menu-button menu="dataMenu"
+                         slot="start"></ion-menu-button>
         <ion-title>
           @if (selectedCollection()) {
           {{ selectedCollection() }}

@@ -21,8 +21,11 @@ import {
   IonItem,
   IonLabel,
   IonList,
+  IonMenu,
+  IonMenuButton,
   IonNote,
   IonSpinner,
+  IonSplitPane,
   IonTextarea,
   IonTitle,
   IonToolbar,
@@ -74,12 +77,32 @@ type QueryItem = {
     IonNote,
     IonSpinner,
     IonIcon,
+    IonSplitPane,
+    IonMenu,
+    IonMenuButton,
     FormsModule,
     DatePipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './prompt.page.html',
   styles: `
+
+    .promptMenu {
+      ion-title {
+        padding-inline: unset;
+
+        div {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          ion-icon {
+            margin-right: 5px;
+          }
+        }
+      }
+    }
+
     .promptContainer {
       display: flex;
       flex-direction: column;
@@ -344,6 +367,41 @@ type QueryItem = {
         h3 {
           font-weight: 500;
           margin-bottom: 6px;
+          white-space: normal;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+        }
+      }
+    }
+
+    .emptyState {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--ion-color-medium);
+
+      p {
+        margin: 0 0 16px 0;
+        font-size: 14px;
+      }
+    }
+
+    ion-menu {
+      ion-toolbar {
+        ion-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          ion-icon {
+            font-size: 20px;
+          }
         }
       }
     }
@@ -482,9 +540,12 @@ export class PromptPage implements OnDestroy {
     })
 
     this.eventSource.addEventListener('complete', (event: MessageEvent) => {
-      const queries = JSON.parse(event.data) as string[]
+      const result = JSON.parse(event.data) as {
+        queries: string[]
+        result: string
+      }
       this.result.set(
-        queries.map((x) => ({
+        result.queries.map((x) => ({
           id: crypto.randomUUID(),
           query: x,
           result: '',
