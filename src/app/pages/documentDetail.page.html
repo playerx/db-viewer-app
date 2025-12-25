@@ -41,20 +41,14 @@
 
     @if (document() && !error()) {
     <div class="monacoEditorContainer">
-      <!-- @if (!showDiff()) {
+      @if (!showDiff()) {
       <nu-monaco-editor #editor
-                        [(ngModel)]="jsonString"
+                        [ngModel]="jsonString()"
+                        (ngModelChange)="modifiedJsonString.set($event);"
                         (event)="onEditorInit($event)"
                         [options]="editorOptions"
                         [height]="'100%'"></nu-monaco-editor>
       } @else {
-      <nu-monaco-diff-editor #diffEditor
-                             [old]="diffOldModel()"
-                             [new]="diffNewModel()"
-                             (event)="onEditorInit($event)"
-                             [options]="diffEditorOptions"
-                             [height]="'100%'"></nu-monaco-diff-editor>
-      } -->
       @for (key of [diffEditorKey()]; track key) {
       <nu-monaco-diff-editor #diffEditor
                              [old]="diffOldModel()"
@@ -63,6 +57,8 @@
                              [options]="diffEditorOptions"
                              [height]="'100%'"></nu-monaco-diff-editor>
       }
+      }
+
     </div>
 
     <div class="promptSection">

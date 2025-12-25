@@ -46,6 +46,7 @@ import { DocumentData, PromptLog, PromptUpdate } from '../services/api.types'
 
 type QueryItem = {
   id: string
+  promptLogId: string
   query: string
   result: string
   resultData: any | null
@@ -557,12 +558,14 @@ export class PromptPage implements OnInit, OnDestroy {
 
     this.eventSource.addEventListener('complete', (event: MessageEvent) => {
       const result = JSON.parse(event.data) as {
+        id: string
         queries: string[]
         result: string
       }
       this.result.set(
         result.queries.map((x) => ({
           id: crypto.randomUUID(),
+          promptLogId: result.id,
           query: x,
           result: '',
           resultData: null,
@@ -628,6 +631,7 @@ export class PromptPage implements OnInit, OnDestroy {
     this.result.set(
       item.queries.map((query) => ({
         id: crypto.randomUUID(),
+        promptLogId: item._id,
         query: query,
         result: '',
         resultData: null,
@@ -656,7 +660,7 @@ export class PromptPage implements OnInit, OnDestroy {
     try {
       const res = await this.apiService.runQueries(
         [queryItem.query],
-        queryItem.id
+        queryItem.promptLogId
       )
 
       this.result.update((items) => {

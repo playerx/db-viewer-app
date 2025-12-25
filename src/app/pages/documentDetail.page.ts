@@ -266,6 +266,8 @@ export class DocumentDetailPage implements OnInit {
 
       this.promptText.set('')
       this.diffEditorKey.update((x) => x + 1)
+
+      this.showDiff.set(false)
       // alert('Document updated successfully')
     } catch (err) {
       this.loading.set(false)
