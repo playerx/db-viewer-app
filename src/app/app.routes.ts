@@ -12,7 +12,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'data',
+        redirectTo: 'prompt',
         pathMatch: 'full',
       },
       {

@@ -1,5 +1,5 @@
 <ion-split-pane contentId="prompt-content"
-                when="false">
+                [when]="whenCondition()">
   <!-- Menu/Sidebar - Recent Queries -->
   <ion-menu contentId="prompt-content"
             menuId="promptMenu"
@@ -13,6 +13,13 @@
             Recent Queries
           </div>
         </ion-title>
+        <ion-button slot="start"
+                    fill="clear"
+                    class="pinButton"
+                    (click)="toggleMenuPin()">
+          <ion-icon slot="icon-only"
+                    name="menu-outline"></ion-icon>
+        </ion-button>
       </ion-toolbar>
     </ion-header>
 
@@ -31,7 +38,7 @@
         @for (item of history(); track item._id) {
         <ion-item button
                   class="historyItem"
-                  (click)="loadFromHistory(item); promptMenu?.close();">
+                  (click)="loadFromHistory(item, promptMenu)">
           <ion-label>
             <h3>{{ item.prompt }}</h3>
             <p class="timestamp">{{ item.lastUsedAt | date:'short' }}</p>
@@ -49,13 +56,15 @@
     <ion-header>
       <ion-toolbar>
         <ion-menu-button menu="promptMenu"
-                         slot="start"></ion-menu-button>
+                         slot="start"
+                         (click)="menuPinned.set(true)"></ion-menu-button>
         <ion-title>Talk to your DB</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content>
-      <ion-header collapse="condense">
+      <ion-header collapse="condense"
+                  class="pageHeader">
         <ion-toolbar>
           <ion-title size="large">Talk to your DB</ion-title>
         </ion-toolbar>

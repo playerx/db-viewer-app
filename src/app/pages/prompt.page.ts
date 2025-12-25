@@ -39,10 +39,14 @@ import {
   chevronUp,
   clipboard,
   closeCircle,
+  menuOutline,
+  pin,
+  pinOutline,
   timeOutline,
 } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData, PromptLog, PromptUpdate } from '../services/api.types'
+import { StorageService } from '../services/storage.service'
 
 type QueryItem = {
   id: string
@@ -85,16 +89,30 @@ type QueryItem = {
   styles: `
 
     .promptMenu {
-      ion-title {
-        padding-inline: unset;
+      ion-toolbar {
+        ion-title {
+          padding-inline: unset;
 
-        div {
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            ion-icon {
+              margin-right: 5px;
+            }
+          }
+        }
+
+        .pinButton {
+          --padding-start: 8px;
+          --padding-end: 8px;
+          margin-right: 8px;
+          z-index: 1000;
 
           ion-icon {
-            margin-right: 5px;
+            font-size: 31px;
+            transition: all 0.2s ease;
           }
         }
       }
@@ -105,6 +123,9 @@ type QueryItem = {
       flex-direction: column;
       gap: 20px;
       padding-bottom: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     .inputArea {
@@ -389,6 +410,11 @@ type QueryItem = {
       }
     }
 
+    ion-header.pageHeader {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
     ion-menu {
       ion-toolbar {
         ion-title {
@@ -401,6 +427,11 @@ type QueryItem = {
           }
         }
       }
+    }
+
+    ion-menu-button {
+      margin-top: 4px;
+      margin-left: 3px;
     }
 
     .timestamp {
@@ -485,6 +516,7 @@ type QueryItem = {
 export class PromptPage implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
+  private readonly storageService = inject(StorageService)
   private eventSource: EventSource | null = null
 
   prompt = signal('')
@@ -496,6 +528,9 @@ export class PromptPage implements OnInit, OnDestroy {
   showProgressDetails = signal(false)
   copiedQueryId = signal<string | null>(null)
   loadingHistory = signal(false)
+  menuPinned = signal(false)
+
+  whenCondition = computed(() => (this.menuPinned() ? `lg` : false))
 
   currentStep = computed(() => {
     const allUpdates = this.updates()
@@ -512,10 +547,17 @@ export class PromptPage implements OnInit, OnDestroy {
       checkmarkCircle,
       closeCircle,
       timeOutline,
+      pin,
+      pinOutline,
+      menuOutline,
     })
   }
 
   async ngOnInit(): Promise<void> {
+    const savedPinState = this.storageService.get<boolean>('menuPinned')
+    if (savedPinState !== null) {
+      this.menuPinned.set(savedPinState)
+    }
     await this.loadPromptHistory()
   }
 
@@ -622,7 +664,7 @@ export class PromptPage implements OnInit, OnDestroy {
     this.showProgressDetails.set(false)
   }
 
-  loadFromHistory(item: PromptLog): void {
+  loadFromHistory(item: PromptLog, menu?: any): void {
     this.prompt.set(item.prompt)
     this.updates.set([])
     this.error.set(null)
@@ -640,6 +682,11 @@ export class PromptPage implements OnInit, OnDestroy {
         error: null,
       }))
     )
+
+    // Close menu if not pinned
+    if (!this.menuPinned() && menu) {
+      menu.close()
+    }
   }
 
   toggleProgressDetails(): void {
@@ -757,5 +804,13 @@ export class PromptPage implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Failed to copy to clipboard:', error)
     }
+  }
+
+  toggleMenuPin(): void {
+    this.menuPinned.update((pinned) => {
+      const newState = !pinned
+      this.storageService.set('menuPinned', newState)
+      return newState
+    })
   }
 }
