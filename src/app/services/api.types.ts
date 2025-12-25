@@ -35,20 +35,36 @@ export interface DeleteResponse {
 
 export interface EventLog {
   _id: string
-  type: 'UPDATE' | 'DELETE' | 'PROMPT'
+  type: 'UPDATE' | 'DELETE' | 'QUERY'
   collection?: string
-  documentId?: string
+  id?: string
   timestamp: string
   data?: Record<string, unknown>
-  prompt?: string
-  result?: string
-  debug?: DebugStep[]
+  queries?: string[]
+  results?: (number | Record<string, unknown>)[]
 }
 
 export interface DebugStep {
   index: number
   step: string
   content: string
+}
+
+export interface PromptLog {
+  _id: string
+  prompt: string
+  result: string
+  queries: string[]
+  timestamp: string
+  lastUsedAt: string
+  debug?: {
+    messages: DebugStep[]
+  }
+}
+
+export interface PromptLogsResponse {
+  data: PromptLog[]
+  pagination: PaginationInfo
 }
 
 export interface EventsResponse {

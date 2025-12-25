@@ -16,19 +16,24 @@
     </ion-header>
 
     <ion-content>
-      @if (history().length === 0) {
+      @if (loadingHistory()) {
+      <div class="emptyState">
+        <ion-spinner></ion-spinner>
+        <p>Loading history...</p>
+      </div>
+      } @else if (history().length === 0) {
       <div class="emptyState">
         <p>No recent queries yet</p>
       </div>
       } @else {
       <ion-list>
-        @for (item of history(); track $index) {
+        @for (item of history(); track item._id) {
         <ion-item button
                   class="historyItem"
                   (click)="loadFromHistory(item); promptMenu?.close();">
           <ion-label>
             <h3>{{ item.prompt }}</h3>
-            <p class="timestamp">{{ item.timestamp | date:'short' }}</p>
+            <p class="timestamp">{{ item.lastUsedAt | date:'short' }}</p>
           </ion-label>
         </ion-item>
         }

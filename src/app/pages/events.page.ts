@@ -118,7 +118,7 @@ export class EventsPage implements OnInit {
   showDebug = signal(false)
   selectedType = signal<string>('all')
 
-  eventTypes = ['all', 'UPDATE', 'DELETE', 'PROMPT']
+  eventTypes = ['all', 'UPDATE', 'DELETE', 'QUERY']
 
   filteredEvents = computed(() => {
     const type = this.selectedType()
@@ -181,7 +181,7 @@ export class EventsPage implements OnInit {
         return 'primary'
       case 'DELETE':
         return 'danger'
-      case 'PROMPT':
+      case 'QUERY':
         return 'tertiary'
       default:
         return 'medium'
@@ -194,8 +194,8 @@ export class EventsPage implements OnInit {
         return 'eventTypeUpdate'
       case 'DELETE':
         return 'eventTypeDelete'
-      case 'PROMPT':
-        return 'eventTypePrompt'
+      case 'QUERY':
+        return 'eventTypeQuery'
       default:
         return ''
     }

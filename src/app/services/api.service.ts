@@ -9,6 +9,8 @@ import {
   EventLog,
   EventsResponse,
   PaginationParams,
+  PromptLog,
+  PromptLogsResponse,
 } from './api.types'
 
 @Injectable({
@@ -81,9 +83,12 @@ export class ApiService {
     )
   }
 
-  async runQueries(queries: string[]) {
+  async runQueries(queries: string[], promptLogId: string) {
     return firstValueFrom(
-      this.http.post<any[]>(`${this.baseUrl}/data/queries`, queries)
+      this.http.post<any[]>(
+        `${this.baseUrl}/data/queries?promptLogId=${promptLogId}`,
+        queries
+      )
     )
   }
 
@@ -115,6 +120,45 @@ export class ApiService {
   // Prompt API - returns the URL for EventSource SSE connection
   getPromptUrl(prompt: string): string {
     const params = new HttpParams().set('prompt', prompt)
-    return `${this.baseUrl}/data/prompt?${params.toString()}`
+    return `${this.baseUrl}/prompt?${params.toString()}`
+  }
+
+  // Prompt Logs API
+  async getPromptLogs(params?: PaginationParams): Promise<PromptLogsResponse> {
+    let httpParams = new HttpParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          httpParams = httpParams.set(key, value.toString())
+        }
+      })
+    }
+    return firstValueFrom(
+      this.http.get<PromptLogsResponse>(`${this.baseUrl}/prompt/log`, {
+        params: httpParams,
+      })
+    )
+  }
+
+  async getPromptLogById(id: string, debug?: boolean): Promise<PromptLog> {
+    let httpParams = new HttpParams()
+    if (debug) {
+      httpParams = httpParams.set('debug', 'true')
+    }
+    return firstValueFrom(
+      this.http.get<PromptLog>(`${this.baseUrl}/prompt/log/${id}`, {
+        params: httpParams,
+      })
+    )
+  }
+
+  async deletePromptLog(
+    id: string
+  ): Promise<{ success: boolean; message: string }> {
+    return firstValueFrom(
+      this.http.delete<{ success: boolean; message: string }>(
+        `${this.baseUrl}/prompt/log/${id}`
+      )
+    )
   }
 }

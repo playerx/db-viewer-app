@@ -5,6 +5,7 @@ import {
   computed,
   inject,
   OnDestroy,
+  OnInit,
   signal,
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
@@ -41,12 +42,7 @@ import {
   timeOutline,
 } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
-import { DocumentData, PromptUpdate } from '../services/api.types'
-
-interface PromptHistory {
-  prompt: string
-  timestamp: Date
-}
+import { DocumentData, PromptLog, PromptUpdate } from '../services/api.types'
 
 type QueryItem = {
   id: string
@@ -485,7 +481,7 @@ type QueryItem = {
     }
   `,
 })
-export class PromptPage implements OnDestroy {
+export class PromptPage implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
   private eventSource: EventSource | null = null
@@ -495,9 +491,10 @@ export class PromptPage implements OnDestroy {
   updates = signal<PromptUpdate[]>([])
   result = signal<QueryItem[] | null>(null)
   error = signal<string | null>(null)
-  history = signal<PromptHistory[]>([])
+  history = signal<PromptLog[]>([])
   showProgressDetails = signal(false)
   copiedQueryId = signal<string | null>(null)
+  loadingHistory = signal(false)
 
   currentStep = computed(() => {
     const allUpdates = this.updates()
@@ -517,8 +514,27 @@ export class PromptPage implements OnDestroy {
     })
   }
 
+  async ngOnInit(): Promise<void> {
+    await this.loadPromptHistory()
+  }
+
   ngOnDestroy(): void {
     this.closeEventSource()
+  }
+
+  async loadPromptHistory(): Promise<void> {
+    this.loadingHistory.set(true)
+    try {
+      const response = await this.apiService.getPromptLogs({
+        skip: 0,
+        limit: 50,
+      })
+      this.history.set(response.data)
+    } catch (error) {
+      console.error('Failed to load prompt history:', error)
+    } finally {
+      this.loadingHistory.set(false)
+    }
   }
 
   executePrompt(): void {
@@ -557,14 +573,8 @@ export class PromptPage implements OnDestroy {
       )
       this.loading.set(false)
 
-      // Add to history
-      this.history.update((hist) => [
-        {
-          prompt: promptText,
-          timestamp: new Date(),
-        },
-        ...hist,
-      ])
+      // Reload history to include the new prompt log
+      this.loadPromptHistory()
 
       this.closeEventSource()
     })
@@ -609,9 +619,23 @@ export class PromptPage implements OnDestroy {
     this.showProgressDetails.set(false)
   }
 
-  loadFromHistory(item: PromptHistory): void {
+  loadFromHistory(item: PromptLog): void {
     this.prompt.set(item.prompt)
     this.updates.set([])
+    this.error.set(null)
+
+    // Load the queries from the selected prompt log
+    this.result.set(
+      item.queries.map((query) => ({
+        id: crypto.randomUUID(),
+        query: query,
+        result: '',
+        resultData: null,
+        collection: this.extractCollectionFromQuery(query),
+        isLoading: false,
+        error: null,
+      }))
+    )
   }
 
   toggleProgressDetails(): void {
@@ -630,7 +654,10 @@ export class PromptPage implements OnDestroy {
     })
 
     try {
-      const res = await this.apiService.runQueries([queryItem.query])
+      const res = await this.apiService.runQueries(
+        [queryItem.query],
+        queryItem.id
+      )
 
       this.result.update((items) => {
         const item = items?.find((x) => x.id === queryItem.id)

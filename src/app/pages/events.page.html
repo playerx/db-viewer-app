@@ -79,7 +79,7 @@
           @if (event.type === 'UPDATE' || event.type === 'DELETE') {
           <div class="metaInfo">
             <strong>Collection:</strong> {{ event.collection }}<br>
-            <strong>Document ID:</strong> {{ event.documentId }}
+            <strong>Document ID:</strong> {{ event.id }}
           </div>
 
           @if (event.type === 'UPDATE' && event.data) {
@@ -90,28 +90,23 @@
           }
           }
 
-          @if (event.type === 'PROMPT') {
+          @if (event.type === 'QUERY') {
           <div>
-            <strong>Prompt:</strong>
-            <p>{{ event.prompt }}</p>
-          </div>
-          @if (event.result) {
-          <div style="margin-top: 8px;">
-            <strong>Result:</strong>
-            <pre style="font-size: 12px; overflow-x: auto;">{{ event.result }}</pre>
-          </div>
-          }
-
-          @if (event.debug && event.debug.length > 0) {
-          <div class="debugSteps">
-            <strong>Debug Steps ({{ event.debug.length }}):</strong>
-            @for (step of event.debug; track step.index) {
-            <div style="margin-top: 4px;">
-              <strong>{{ step.step }}:</strong> {{ step.content }}
+            @if (event.queries && event.queries.length > 0) {
+            <div>
+              <strong>Queries ({{ event.queries.length }}):</strong>
+              @for (query of event.queries; track $index) {
+              <pre style="font-size: 12px; overflow-x: auto; margin-top: 4px;">{{ query }}</pre>
+              }
+            </div>
+            }
+            @if (event.results && event.results.length > 0) {
+            <div style="margin-top: 8px;">
+              <strong>Results:</strong>
+              <pre style="font-size: 12px; overflow-x: auto;">{{ event.results | json }}</pre>
             </div>
             }
           </div>
-          }
           }
         </ion-card-content>
       </ion-card>
