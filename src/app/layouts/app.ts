@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core'
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone'
 import { addIcons } from 'ionicons'
-import { documents } from 'ionicons/icons'
+import { createOutline, documents } from 'ionicons/icons'
 
 @Component({
   selector: 'app-root',
@@ -14,6 +14,7 @@ export class App {
   constructor() {
     addIcons({
       documents,
+      createOutline,
     })
   }
 }

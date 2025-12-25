@@ -61,9 +61,21 @@
 
     </div>
 
+    @if (!promptExpanded()) {
+    <ion-fab vertical="bottom"
+             horizontal="end"
+             slot="fixed">
+      <ion-fab-button (click)="togglePrompt()">
+        <ion-icon name="create-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+    }
+
+    @if (promptExpanded()) {
     <div class="promptSection">
       <div class="promptInputContainer">
         <ion-textarea [rows]="4"
+                      autofocus
                       [placeholder]="'Enter your prompt to transform the document...'"
                       [(ngModel)]="promptText"
                       [disabled]="loading()"></ion-textarea>
@@ -84,19 +96,8 @@
           </ion-button>
         </div>
       </div>
-      <!-- @if (showDiff()) {
-      <div class="diffActions">
-        <ion-button fill="outline"
-                    (click)="cancelDiff()">
-          Cancel
-        </ion-button>
-        <ion-button (click)="acceptChanges()"
-                    color="primary">
-          Accept Changes
-        </ion-button>
-      </div>
-      } -->
     </div>
+    }
     }
   </div>
 </ion-content>

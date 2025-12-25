@@ -14,7 +14,10 @@ import {
   IonButton,
   IonButtons,
   IonContent,
+  IonFab,
+  IonFabButton,
   IonHeader,
+  IonIcon,
   IonSpinner,
   IonTextarea,
   IonTitle,
@@ -39,6 +42,9 @@ import { DocumentData } from '../services/api.types'
     IonButton,
     IonButtons,
     IonBackButton,
+    IonFab,
+    IonFabButton,
+    IonIcon,
     IonSpinner,
     IonTextarea,
     FormsModule,
@@ -91,9 +97,9 @@ import { DocumentData } from '../services/api.types'
     }
 
     .promptSection {
-      padding: 16px;
       border-top: 1px solid #e0e0e0;
       background: var(--ion-color-light);
+      padding: 16px;
     }
 
     .promptInputContainer {
@@ -159,6 +165,7 @@ export class DocumentDetailPage implements OnInit {
   promptText = signal('')
   showDiff = signal(false)
   modifiedJsonString = signal('')
+  promptExpanded = signal(false)
 
   diffOldModel = computed<NuMonacoEditorDiffModel>(() => ({
     code: this.jsonString(),
@@ -389,8 +396,13 @@ export class DocumentDetailPage implements OnInit {
     this.showDiff.set(false)
     this.modifiedJsonString.set(this.jsonString())
     this.promptText.set('')
+    this.promptExpanded.set(false)
 
     this.diffEditorKey.update((v) => v + 1)
+  }
+
+  togglePrompt(): void {
+    this.promptExpanded.update((v) => !v)
   }
 
   acceptChanges(): void {
