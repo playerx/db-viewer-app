@@ -11,6 +11,7 @@ import {
   PaginationParams,
   PromptLog,
   PromptLogsResponse,
+  type TransformJsonData,
 } from './api.types'
 
 @Injectable({
@@ -63,6 +64,23 @@ export class ApiService {
       this.http.put<DocumentData>(
         `${this.baseUrl}/data/${collection}/${id}`,
         data,
+        {
+          headers: new HttpHeaders({
+            'Content-Type': 'application/json',
+          }),
+        }
+      )
+    )
+  }
+
+  async jsonTransform(
+    json: string,
+    prompt: string
+  ): Promise<TransformJsonData> {
+    return firstValueFrom(
+      this.http.post<TransformJsonData>(
+        `${this.baseUrl}/transform`,
+        { json, prompt },
         {
           headers: new HttpHeaders({
             'Content-Type': 'application/json',

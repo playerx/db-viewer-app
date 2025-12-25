@@ -16,11 +16,14 @@ import {
   IonContent,
   IonHeader,
   IonSpinner,
+  IonTextarea,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone'
 import {
   NuMonacoEditorComponent,
+  NuMonacoEditorDiffComponent,
+  NuMonacoEditorDiffModel,
   NuMonacoEditorEvent,
 } from '@ng-util/monaco-editor'
 import { ApiService } from '../services/api.service'
@@ -37,8 +40,10 @@ import { DocumentData } from '../services/api.types'
     IonButtons,
     IonBackButton,
     IonSpinner,
+    IonTextarea,
     FormsModule,
     NuMonacoEditorComponent,
+    NuMonacoEditorDiffComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './documentDetail.page.html',
@@ -76,12 +81,6 @@ import { DocumentData } from '../services/api.types'
       border-radius: 4px;
     }
 
-    .actionButtons {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-
     .readOnlyField {
       background: var(--ion-color-light);
       padding: 8px;
@@ -89,6 +88,54 @@ import { DocumentData } from '../services/api.types'
       font-family: monospace;
       font-size: 12px;
       word-break: break-all;
+    }
+
+    .promptSection {
+      padding: 16px;
+      border-top: 1px solid #e0e0e0;
+      background: var(--ion-color-light);
+    }
+
+    .promptInputContainer {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+
+      ion-textarea {
+        flex: 1;
+        --background: white;
+        --border-radius: 8px;
+        --padding-start: 12px;
+        --padding-end: 12px;
+        --padding-top: 8px;
+        --padding-bottom: 8px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+
+      ion-button {
+        margin-top: 0;
+        --padding-start: 24px;
+        --padding-end: 24px;
+      }
+    }
+
+    .diffActions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 12px;
+      align-self: stretch;
+    }
+
+    .promptActions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .runButton {
+        flex: 1;
+      }
     }
   `,
 })
@@ -99,13 +146,29 @@ export class DocumentDetailPage implements OnInit {
 
   editor = viewChild<monaco.editor.IStandaloneCodeEditor>('editor')
 
+  diffEditorKey = signal(0)
+
   collection = signal<string>('')
   documentId = signal<string>('')
   document = signal<DocumentData | null>(null)
   loading = signal(false)
   error = signal<string | null>(null)
   jsonString = signal('')
-  originalJsonString = signal('')
+
+  // Prompt and diff-related signals
+  promptText = signal('')
+  showDiff = signal(false)
+  modifiedJsonString = signal('')
+
+  diffOldModel = computed<NuMonacoEditorDiffModel>(() => ({
+    code: this.jsonString(),
+    language: 'json',
+  }))
+
+  diffNewModel = computed<NuMonacoEditorDiffModel>(() => ({
+    code: this.modifiedJsonString(),
+    language: 'json',
+  }))
 
   editorOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
     theme: 'vs-light',
@@ -116,11 +179,20 @@ export class DocumentDetailPage implements OnInit {
     formatOnType: true,
     fontSize: 14,
     tabSize: 2,
+    lineNumbers: 'off',
   }
 
-  hasChanges = computed(() => {
-    return this.jsonString() !== this.originalJsonString()
-  })
+  diffEditorOptions: monaco.editor.IStandaloneEditorConstructionOptions = {
+    theme: 'vs-light',
+    minimap: { enabled: false },
+    automaticLayout: true,
+    readOnly: false,
+    fontSize: 14,
+    tabSize: 2,
+    lineNumbers: 'off',
+  }
+
+  diffEditor = viewChild(NuMonacoEditorDiffComponent)
 
   ngOnInit(): void {
     const collection = this.route.snapshot.paramMap.get('collection')
@@ -139,6 +211,10 @@ export class DocumentDetailPage implements OnInit {
         this.saveDocument()
       )
     }
+
+    if (e.type === 'update-diff') {
+      this.modifiedJsonString.set(e.diffValue!)
+    }
   }
 
   async loadDocument(): Promise<void> {
@@ -151,10 +227,10 @@ export class DocumentDetailPage implements OnInit {
       )
       this.document.set(doc)
       // Convert BSON types to Extended JSON format for editing
-      const jsonStr = JSON.stringify(doc)
+      const jsonStr = JSON.stringify(doc, null, 2)
 
       this.jsonString.set(jsonStr)
-      this.originalJsonString.set(jsonStr)
+      this.modifiedJsonString.set(jsonStr)
       this.loading.set(false)
     } catch (err) {
       this.error.set('Failed to load document')
@@ -168,7 +244,7 @@ export class DocumentDetailPage implements OnInit {
 
     try {
       // Convert Extended JSON to BSON types for MongoDB
-      dataToSave = this.jsonString()
+      dataToSave = this.modifiedJsonString()
     } catch (err) {
       alert('Invalid JSON format')
       return
@@ -183,11 +259,13 @@ export class DocumentDetailPage implements OnInit {
       )
       this.document.set(updatedDoc)
       // Convert BSON types back to Extended JSON format for editing
-      const jsonStr = JSON.stringify(updatedDoc)
+      const jsonStr = JSON.stringify(updatedDoc, null, 2)
 
       this.jsonString.set(jsonStr)
-      this.originalJsonString.set(jsonStr)
       this.loading.set(false)
+
+      this.promptText.set('')
+      this.diffEditorKey.update((x) => x + 1)
       // alert('Document updated successfully')
     } catch (err) {
       this.loading.set(false)
@@ -215,5 +293,109 @@ export class DocumentDetailPage implements OnInit {
       console.error(err)
       alert('Failed to delete document')
     }
+  }
+
+  async runPrompt(): Promise<void> {
+    // TODO: Replace with actual API call when ready
+    // For now, we'll use mock data to demonstrate the diff functionality
+    this.loading.set(true)
+
+    try {
+      // Simulate API delay
+      // await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const res = await this.apiService.jsonTransform(
+        this.modifiedJsonString(),
+        this.promptText()
+      )
+
+      // Generate mock modified JSON based on the current document
+      // const currentData = JSON.parse(this.modifiedJsonString())
+      // const mockModified = this.generateMockModification(
+      //   currentData,
+      //   this.promptText()
+      // )
+
+      this.modifiedJsonString.set(JSON.stringify(res.data, null, 2))
+
+      this.diffEditorKey.update((v) => v + 1)
+
+      this.showDiff.set(true)
+      this.loading.set(false)
+    } catch (err) {
+      this.loading.set(false)
+      console.error(err)
+      alert('Failed to process prompt')
+    }
+  }
+
+  generateMockModification(
+    data: Record<string, unknown>,
+    prompt: string
+  ): Record<string, unknown> {
+    // Create a copy of the data
+    const modified = JSON.parse(JSON.stringify(data))
+
+    // Apply some mock transformations based on common prompts
+    const lowerPrompt = prompt.toLowerCase()
+
+    if (lowerPrompt.includes('add') || lowerPrompt.includes('new')) {
+      // Add a new field
+      modified['aiGeneratedField'] = 'This is a new field added by AI'
+      modified['timestamp'] = new Date().toISOString()
+    }
+
+    if (lowerPrompt.includes('update') || lowerPrompt.includes('modify')) {
+      // Modify existing fields
+      Object.keys(modified).forEach((key) => {
+        if (typeof modified[key] === 'string') {
+          modified[key] = `${modified[key]} (updated)`
+        }
+      })
+    }
+
+    if (lowerPrompt.includes('remove') || lowerPrompt.includes('delete')) {
+      // Remove the first non-_id field
+      const keys = Object.keys(modified).filter((k) => k !== '_id')
+      if (keys.length > 0) {
+        delete modified[keys[0]]
+      }
+    }
+
+    if (lowerPrompt.includes('status')) {
+      modified['status'] = 'active'
+      modified['updatedAt'] = new Date().toISOString()
+    }
+
+    // Default: add some metadata
+    if (
+      !lowerPrompt.includes('add') &&
+      !lowerPrompt.includes('update') &&
+      !lowerPrompt.includes('remove')
+    ) {
+      modified['metadata'] = {
+        processedBy: 'AI Assistant',
+        prompt: prompt,
+        timestamp: new Date().toISOString(),
+      }
+    }
+
+    return modified
+  }
+
+  cancelDiff(): void {
+    this.showDiff.set(false)
+    this.modifiedJsonString.set(this.jsonString())
+    this.promptText.set('')
+
+    this.diffEditorKey.update((v) => v + 1)
+  }
+
+  acceptChanges(): void {
+    // Apply the modified JSON to the main editor
+    this.jsonString.set(this.modifiedJsonString())
+    this.showDiff.set(false)
+    this.modifiedJsonString.set('')
+    this.promptText.set('')
   }
 }

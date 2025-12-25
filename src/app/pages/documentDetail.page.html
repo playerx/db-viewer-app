@@ -7,13 +7,19 @@
     <ion-title>Document Details</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="saveDocument()"
-                  [disabled]="!hasChanges() || loading()">
+                  [disabled]="loading()">
         @if (loading()) {
         <ion-spinner></ion-spinner>
         } @else {
+
         Save
         }
       </ion-button>
+
+      <!-- <ion-button color="danger"
+                  (click)="deleteDocument()">
+        Delete
+      </ion-button> -->
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -35,20 +41,65 @@
 
     @if (document() && !error()) {
     <div class="monacoEditorContainer">
+      <!-- @if (!showDiff()) {
       <nu-monaco-editor #editor
                         [(ngModel)]="jsonString"
                         (event)="onEditorInit($event)"
                         [options]="editorOptions"
                         [height]="'100%'"></nu-monaco-editor>
+      } @else {
+      <nu-monaco-diff-editor #diffEditor
+                             [old]="diffOldModel()"
+                             [new]="diffNewModel()"
+                             (event)="onEditorInit($event)"
+                             [options]="diffEditorOptions"
+                             [height]="'100%'"></nu-monaco-diff-editor>
+      } -->
+      @for (key of [diffEditorKey()]; track key) {
+      <nu-monaco-diff-editor #diffEditor
+                             [old]="diffOldModel()"
+                             [new]="diffNewModel()"
+                             (event)="onEditorInit($event)"
+                             [options]="diffEditorOptions"
+                             [height]="'100%'"></nu-monaco-diff-editor>
+      }
     </div>
 
-    <div class="actionButtons">
-      <ion-button expand="block"
-                  color="danger"
-                  fill="outline"
-                  (click)="deleteDocument()">
-        Delete Document
-      </ion-button>
+    <div class="promptSection">
+      <div class="promptInputContainer">
+        <ion-textarea [rows]="4"
+                      [placeholder]="'Enter your prompt to transform the document...'"
+                      [(ngModel)]="promptText"
+                      [disabled]="loading()"></ion-textarea>
+        <div class="promptActions">
+          <ion-button (click)="runPrompt()"
+                      [disabled]="!promptText() || loading()"
+                      class="runButton">
+            @if (loading()) {
+            <ion-spinner></ion-spinner>
+            } @else {
+            Run
+            }
+          </ion-button>
+          <ion-button fill="outline"
+                      size="small"
+                      (click)="cancelDiff()">
+            Cancel
+          </ion-button>
+        </div>
+      </div>
+      <!-- @if (showDiff()) {
+      <div class="diffActions">
+        <ion-button fill="outline"
+                    (click)="cancelDiff()">
+          Cancel
+        </ion-button>
+        <ion-button (click)="acceptChanges()"
+                    color="primary">
+          Accept Changes
+        </ion-button>
+      </div>
+      } -->
     </div>
     }
   </div>

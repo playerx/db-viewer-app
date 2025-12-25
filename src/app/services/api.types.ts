@@ -23,6 +23,16 @@ export interface DocumentData {
   [key: string]: unknown
 }
 
+export interface TransformJsonData {
+  result: string
+  data: Object
+  debug: {
+    index: number
+    step: string
+    content: string
+  }[]
+}
+
 export interface CollectionResponse {
   data: DocumentData[]
   pagination: PaginationInfo
