@@ -16,7 +16,7 @@
         <ion-button slot="start"
                     fill="clear"
                     class="pinButton"
-                    (click)="toggleMenuPin()">
+                    (click)="toggleMenuPin(); promptMenu.close()">
           <ion-icon slot="icon-only"
                     name="menu-outline"></ion-icon>
         </ion-button>
@@ -38,7 +38,7 @@
         @for (item of history(); track item._id) {
         <ion-item button
                   class="historyItem"
-                  (click)="loadFromHistory(item, promptMenu)">
+                  (click)="loadFromHistory(item, promptMenu); promptMenu.close()">
           <ion-label>
             <h3>{{ item.prompt }}</h3>
             <p class="timestamp">{{ item.lastUsedAt | date:'short' }}</p>
