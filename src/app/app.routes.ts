@@ -25,11 +25,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/collections.page').then((m) => m.CollectionsPage),
       },
-      {
-        path: 'events',
-        loadComponent: () =>
-          import('./pages/events.page').then((m) => m.EventsPage),
-      },
     ],
   },
   {
