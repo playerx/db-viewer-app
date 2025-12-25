@@ -29,7 +29,14 @@ import {
 } from '@ionic/angular/standalone'
 import { EJSON, ObjectId } from 'bson'
 import { addIcons } from 'ionicons'
-import { chevronDown, chevronUp } from 'ionicons/icons'
+import {
+  checkmarkCircle,
+  chevronDown,
+  chevronUp,
+  clipboard,
+  closeCircle,
+  timeOutline,
+} from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData, PromptUpdate } from '../services/api.types'
 
@@ -76,68 +83,151 @@ type QueryItem = {
     .promptContainer {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 20px;
+      padding-bottom: 24px;
     }
 
     .inputArea {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      padding: 16px;
+      gap: 12px;
+      padding: 20px;
+      background: var(--ion-background-color);
+      border-bottom: 1px solid var(--ion-color-light);
+
+      ion-textarea {
+        --background: var(--ion-color-light);
+        --padding-start: 16px;
+        --padding-end: 16px;
+        --padding-top: 12px;
+        --padding-bottom: 12px;
+        --border-radius: 12px;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.2s ease;
+
+        &::part(native) {
+          min-height: 80px;
+        }
+
+        &:focus-within {
+          --background: var(--ion-color-light-tint);
+          box-shadow: 0 0 0 2px var(--ion-color-primary);
+        }
+      }
     }
 
     .buttonContainer {
       display: flex;
-      gap: 8px;
+      gap: 12px;
+
+      ion-button {
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        --border-radius: 10px;
+        text-transform: none;
+
+        &[expand='block'] {
+          flex: 1;
+        }
+      }
     }
 
     .compactProgress {
-      margin-top: 8px;
-      padding: 8px;
+      margin-top: 12px;
+      padding: 12px;
       background: var(--ion-color-light);
-      border-radius: 8px;
+      border-radius: 12px;
+      border: 1px solid var(--ion-color-primary-shade);
+      animation: pulse 2s ease-in-out infinite;
 
       ion-button {
         margin: 0;
         --padding-start: 0;
         --padding-end: 0;
+        font-weight: 500;
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.9;
       }
     }
 
     .progressDetails {
-      margin-top: 8px;
-      max-height: 200px;
+      margin-top: 12px;
+      max-height: 250px;
       overflow-y: auto;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+      }
+      to {
+        opacity: 1;
+        max-height: 250px;
+      }
     }
 
     .stepDetail {
       font-family: monospace;
       font-size: 12px;
-      padding: 8px;
+      padding: 10px;
       background: var(--ion-background-color);
-      border-radius: 4px;
-      margin: 4px 0;
+      border-radius: 8px;
+      margin: 6px 0;
+      border-left: 3px solid var(--ion-color-primary);
 
       pre {
-        margin: 4px 0 0 0;
+        margin: 6px 0 0 0;
         white-space: pre-wrap;
+        color: var(--ion-color-medium);
       }
     }
 
     .queryList {
-      padding: 0 16px;
+      padding: 0 20px;
     }
 
     .queryListTitle {
-      margin: 16px 0 8px 0;
-      font-size: 18px;
-      font-weight: 600;
+      margin: 0 0 16px 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: var(--ion-color-primary);
+        border-radius: 2px;
+      }
     }
 
     .queryCard {
-      margin-bottom: 12px;
-      border: 1px solid #e3e3e3;
-      padding: 10px;
+      margin-bottom: 16px;
+      border: 2px solid var(--ion-color-light);
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--ion-background-color);
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+      &:hover {
+        border-color: var(--ion-color-primary-tint);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
     }
 
     .queryContent {
@@ -145,53 +235,89 @@ type QueryItem = {
       justify-content: space-between;
       align-items: flex-start;
       gap: 12px;
+    }
 
-      ion-button {
-        flex-shrink: 0;
-      }
+    .queryActions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .queryText {
       flex: 1;
       margin: 0;
-      font-family: monospace;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
       font-size: 13px;
       white-space: pre-wrap;
       word-break: break-word;
+      background: var(--ion-color-light);
+      padding: 12px;
+      border-radius: 8px;
+      line-height: 1.6;
     }
 
     .queryResult {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--ion-color-light);
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid var(--ion-color-light);
+      animation: fadeIn 0.3s ease-in;
 
       strong {
-        display: block;
-        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
+        color: var(--ion-color-success);
+        font-weight: 600;
+        font-size: 14px;
+
+        ion-icon {
+          font-size: 18px;
+        }
       }
 
       pre {
         margin: 0;
-        font-family: monospace;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         font-size: 12px;
         white-space: pre-wrap;
         word-break: break-word;
         background: var(--ion-color-light);
-        padding: 8px;
-        border-radius: 4px;
+        padding: 12px;
+        border-radius: 8px;
+        line-height: 1.5;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
     .queryError {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--ion-color-danger-shade);
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid var(--ion-color-danger-tint);
+      animation: fadeIn 0.3s ease-in;
 
       strong {
-        display: block;
-        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
         color: var(--ion-color-danger);
         font-weight: 600;
+        font-size: 14px;
+
+        ion-icon {
+          font-size: 18px;
+        }
       }
 
       p {
@@ -199,28 +325,65 @@ type QueryItem = {
         font-size: 13px;
         color: var(--ion-color-danger-shade);
         background: rgba(var(--ion-color-danger-rgb), 0.1);
-        padding: 12px;
-        border-radius: 4px;
-        border-left: 3px solid var(--ion-color-danger);
+        padding: 14px;
+        border-radius: 8px;
+        border-left: 4px solid var(--ion-color-danger);
+        line-height: 1.5;
       }
     }
 
     .historyItem {
       cursor: pointer;
+      transition: background 0.2s ease;
+
+      &:hover {
+        --background-hover: var(--ion-color-light);
+      }
+
+      ion-label {
+        h3 {
+          font-weight: 500;
+          margin-bottom: 6px;
+        }
+      }
     }
 
     .timestamp {
       font-size: 12px;
       color: var(--ion-color-medium);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      &::before {
+        content: '';
+        width: 4px;
+        height: 4px;
+        background: var(--ion-color-medium);
+        border-radius: 50%;
+      }
     }
 
     .resultList {
-      margin-top: 8px;
+      margin-top: 12px;
       padding: 0;
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     .documentItem {
       cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid var(--ion-color-light);
+
+      &:hover {
+        --background-hover: var(--ion-color-primary-tint);
+        --background-hover-opacity: 0.1;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
     }
 
     .dateLabel {
@@ -233,6 +396,33 @@ type QueryItem = {
         color: var(--ion-color-medium);
         margin: 0;
         white-space: nowrap;
+      }
+    }
+
+    .copyButton {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      height: 32px;
+      transition: all 0.2s ease;
+
+      &.copied {
+        --background: var(--ion-color-success);
+        --color: white;
+      }
+    }
+
+    .helperText {
+      font-size: 13px;
+      color: var(--ion-color-medium);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 4px;
+
+      ion-icon {
+        font-size: 16px;
+        flex-shrink: 0;
       }
     }
   `,
@@ -249,6 +439,7 @@ export class PromptPage implements OnDestroy {
   error = signal<string | null>(null)
   history = signal<PromptHistory[]>([])
   showProgressDetails = signal(false)
+  copiedQueryId = signal<string | null>(null)
 
   currentStep = computed(() => {
     const allUpdates = this.updates()
@@ -258,7 +449,14 @@ export class PromptPage implements OnDestroy {
   })
 
   constructor() {
-    addIcons({ chevronDown, chevronUp })
+    addIcons({
+      chevronDown,
+      chevronUp,
+      clipboard,
+      checkmarkCircle,
+      closeCircle,
+      timeOutline,
+    })
   }
 
   ngOnDestroy(): void {
@@ -402,7 +600,9 @@ export class PromptPage implements OnDestroy {
     return (
       Array.isArray(data) &&
       data.length > 0 &&
-      data.every((item) => typeof item === 'object' && item !== null && '_id' in item)
+      data.every(
+        (item) => typeof item === 'object' && item !== null && '_id' in item
+      )
     )
   }
 
@@ -414,7 +614,8 @@ export class PromptPage implements OnDestroy {
   }
 
   viewDocument(documentId: ObjectId | string, collection: string | null): void {
-    const id = typeof documentId === 'object' ? documentId.toHexString() : documentId
+    const id =
+      typeof documentId === 'object' ? documentId.toHexString() : documentId
 
     if (collection) {
       this.router.navigate(['/document', collection, id])
@@ -452,5 +653,17 @@ export class PromptPage implements OnDestroy {
   private extractCollectionFromQuery(query: string): string | null {
     const match = query.match(/db\.(\w+)\./)
     return match ? match[1] : null
+  }
+
+  async copyQueryToClipboard(queryItem: QueryItem): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(queryItem.query)
+      this.copiedQueryId.set(queryItem.id)
+      setTimeout(() => {
+        this.copiedQueryId.set(null)
+      }, 2000)
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error)
+    }
   }
 }
