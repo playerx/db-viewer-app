@@ -410,6 +410,13 @@ type QueryItem = {
       }
     }
 
+    .tip {
+      &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    }
+
     ion-header.pageHeader {
       max-width: 900px;
       margin: 0 auto;
@@ -518,6 +525,11 @@ export class PromptPage implements OnInit, OnDestroy {
   private readonly router = inject(Router)
   private readonly storageService = inject(StorageService)
   private eventSource: EventSource | null = null
+
+  tips = signal([
+    'Show me all users created this month',
+    'Find top rating users',
+  ])
 
   prompt = signal('')
   loading = signal(false)

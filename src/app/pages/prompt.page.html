@@ -81,7 +81,15 @@
 
           <div class="helperText">
             <ion-icon name="bulb-outline"></ion-icon>
-            <span>Try: "Show me all users created this month" or "Find products with low stock"</span>
+            <span>Try:
+              @for (tip of tips(); track tip; let isLast = $last) {
+              "<span class="tip"
+                    (click)="prompt.set(tip)">{{ tip }}</span>"
+              @if (!isLast){
+              <span> or </span>
+              }
+              }
+            </span>
           </div>
 
           <div class="buttonContainer">
