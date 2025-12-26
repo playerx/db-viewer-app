@@ -226,9 +226,8 @@ type QueryItem = {
       font-size: 12px;
       padding: 10px;
       background: var(--ion-background-color);
-      border-radius: 8px;
       margin: 6px 0;
-      border-left: 3px solid var(--ion-color-primary);
+      border-left: 1px solid var(--ion-color-primary);
 
       pre {
         margin: 6px 0 0 0;
@@ -599,8 +598,8 @@ export class PromptPage implements OnInit, OnDestroy {
   currentStep = computed(() => {
     const allUpdates = this.updates()
     if (allUpdates.length === 0) return ''
-    const latest = allUpdates[allUpdates.length - 1]
-    return latest.step
+    const latest = allUpdates[0]
+    return latest.step === 'model_request' ? 'thinking...' : latest.step
   })
 
   constructor() {
@@ -664,7 +663,8 @@ export class PromptPage implements OnInit, OnDestroy {
 
     this.eventSource.addEventListener('update', (event: MessageEvent) => {
       const update = JSON.parse(event.data) as PromptUpdate
-      this.updates.update((updates) => [...updates, update])
+      console.log(update)
+      this.updates.update((updates) => [update, ...updates])
     })
 
     this.eventSource.addEventListener('complete', (event: MessageEvent) => {
