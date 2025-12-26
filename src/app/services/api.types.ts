@@ -95,3 +95,23 @@ export interface PromptComplete {
 export interface PromptError {
   error: string
 }
+
+export interface Tenant {
+  id: string
+  dbName: string
+  displayConfig: Record<string, string[]>
+}
+
+export interface TenantsResponse {
+  tenants: Tenant[]
+}
+
+export interface CreateTenantRequest {
+  dbConnectionString: string
+  dbName: string
+  displayConfig: Record<string, string[]>
+}
+
+export interface CreateTenantResponse {
+  tenant: Tenant
+}

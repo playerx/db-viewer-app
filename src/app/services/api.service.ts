@@ -4,6 +4,8 @@ import { firstValueFrom } from 'rxjs'
 import { environment } from '../../environments/environment'
 import {
   CollectionResponse,
+  CreateTenantRequest,
+  CreateTenantResponse,
   DeleteResponse,
   DocumentData,
   EventLog,
@@ -11,21 +13,70 @@ import {
   PaginationParams,
   PromptLog,
   PromptLogsResponse,
+  TenantsResponse,
   type TransformJsonData,
 } from './api.types'
+import { StorageService } from './storage.service'
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
   private readonly http = inject(HttpClient)
+  private readonly storage = inject(StorageService)
   private readonly baseUrl = environment.apiUrl
+
+  private getHeaders(): HttpHeaders {
+    const tenantId = this.storage.get<string>('selectedTenantId')
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    })
+    if (tenantId) {
+      headers = headers.set('x-tenant-id', tenantId)
+    }
+    return headers
+  }
+
+  // Tenant API
+  async getTenants(): Promise<TenantsResponse> {
+    return firstValueFrom(
+      this.http.get<TenantsResponse>(`${this.baseUrl}/tenants`)
+    )
+  }
+
+  async createTenant(
+    request: CreateTenantRequest
+  ): Promise<CreateTenantResponse> {
+    return firstValueFrom(
+      this.http.post<CreateTenantResponse>(`${this.baseUrl}/tenants`, request, {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+        }),
+      })
+    )
+  }
+
+  async deleteTenant(tenantId: string): Promise<CreateTenantResponse> {
+    return firstValueFrom(
+      this.http.delete<CreateTenantResponse>(
+        `${this.baseUrl}/tenants/${tenantId}`,
+        {
+          headers: new HttpHeaders({
+            'Content-Type': 'application/json',
+          }),
+        }
+      )
+    )
+  }
 
   // Data API
   async getCollections(): Promise<string[]> {
     return firstValueFrom(
       this.http.get<{ collections: string[] }>(
-        `${this.baseUrl}/data/collections`
+        `${this.baseUrl}/data/collections`,
+        {
+          headers: this.getHeaders(),
+        }
       )
     ).then((x) => x.collections)
   }
@@ -45,13 +96,16 @@ export class ApiService {
     return firstValueFrom(
       this.http.get<CollectionResponse>(`${this.baseUrl}/data/${collection}`, {
         params: httpParams,
+        headers: this.getHeaders(),
       })
     )
   }
 
   async getDocumentById(collection: string, id: string): Promise<DocumentData> {
     return firstValueFrom(
-      this.http.get<DocumentData>(`${this.baseUrl}/data/${collection}/${id}`)
+      this.http.get<DocumentData>(`${this.baseUrl}/data/${collection}/${id}`, {
+        headers: this.getHeaders(),
+      })
     )
   }
 
@@ -65,9 +119,7 @@ export class ApiService {
         `${this.baseUrl}/data/${collection}/${id}`,
         data,
         {
-          headers: new HttpHeaders({
-            'Content-Type': 'application/json',
-          }),
+          headers: this.getHeaders(),
         }
       )
     )
@@ -82,9 +134,7 @@ export class ApiService {
         `${this.baseUrl}/transform`,
         { json, prompt },
         {
-          headers: new HttpHeaders({
-            'Content-Type': 'application/json',
-          }),
+          headers: this.getHeaders(),
         }
       )
     )
@@ -96,7 +146,10 @@ export class ApiService {
   ): Promise<DeleteResponse> {
     return firstValueFrom(
       this.http.delete<DeleteResponse>(
-        `${this.baseUrl}/data/${collection}/${id}`
+        `${this.baseUrl}/data/${collection}/${id}`,
+        {
+          headers: this.getHeaders(),
+        }
       )
     )
   }
@@ -105,7 +158,10 @@ export class ApiService {
     return firstValueFrom(
       this.http.post<any[]>(
         `${this.baseUrl}/data/queries?promptLogId=${promptLogId}`,
-        queries
+        queries,
+        {
+          headers: this.getHeaders(),
+        }
       )
     )
   }
@@ -125,19 +181,26 @@ export class ApiService {
     return firstValueFrom(
       this.http.get<EventLog[] | EventsResponse>(`${this.baseUrl}/events`, {
         params: httpParams,
+        headers: this.getHeaders(),
       })
     )
   }
 
   async deleteEvent(id: string): Promise<DeleteResponse> {
     return firstValueFrom(
-      this.http.delete<DeleteResponse>(`${this.baseUrl}/events/${id}`)
+      this.http.delete<DeleteResponse>(`${this.baseUrl}/events/${id}`, {
+        headers: this.getHeaders(),
+      })
     )
   }
 
   // Prompt API - returns the URL for EventSource SSE connection
   getPromptUrl(prompt: string): string {
-    const params = new HttpParams().set('prompt', prompt)
+    const tenantId = this.storage.get<string>('selectedTenantId')
+    let params = new HttpParams().set('prompt', prompt)
+    if (tenantId) {
+      params = params.set('x-tenant-id', tenantId)
+    }
     return `${this.baseUrl}/prompt?${params.toString()}`
   }
 
@@ -154,6 +217,7 @@ export class ApiService {
     return firstValueFrom(
       this.http.get<PromptLogsResponse>(`${this.baseUrl}/prompt/log`, {
         params: httpParams,
+        headers: this.getHeaders(),
       })
     )
   }
@@ -166,6 +230,7 @@ export class ApiService {
     return firstValueFrom(
       this.http.get<PromptLog>(`${this.baseUrl}/prompt/log/${id}`, {
         params: httpParams,
+        headers: this.getHeaders(),
       })
     )
   }
@@ -175,7 +240,10 @@ export class ApiService {
   ): Promise<{ success: boolean; message: string }> {
     return firstValueFrom(
       this.http.delete<{ success: boolean; message: string }>(
-        `${this.baseUrl}/prompt/log/${id}`
+        `${this.baseUrl}/prompt/log/${id}`,
+        {
+          headers: this.getHeaders(),
+        }
       )
     )
   }

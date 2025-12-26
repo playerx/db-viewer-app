@@ -50,6 +50,7 @@ import {
 import { ApiService } from '../services/api.service'
 import { DocumentData, PromptLog, PromptUpdate } from '../services/api.types'
 import { StorageService } from '../services/storage.service'
+import { TenantService } from '../services/tenant.service'
 
 type QueryItem = {
   id: string
@@ -592,8 +593,10 @@ export class PromptPage implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
   private readonly storageService = inject(StorageService)
+  private readonly tenantService = inject(TenantService)
   private readonly platformId = inject(PLATFORM_ID)
   private eventSource: EventSource | null = null
+  private unsubscribeTenantChange?: () => void
 
   tips = signal([
     'Show me all users created this month',
@@ -647,10 +650,23 @@ export class PromptPage implements OnInit, OnDestroy {
       this.menuPinned.set(savedPinState)
     }
     await this.loadPromptHistory()
+
+    // Subscribe to tenant changes
+    this.unsubscribeTenantChange = this.tenantService.onTenantChange(() => {
+      // Clear all state and reload history when tenant changes
+      this.clearPrompt()
+      this.history.set([])
+      this.loadPromptHistory()
+    })
   }
 
   ngOnDestroy(): void {
     this.closeEventSource()
+
+    // Cleanup subscription
+    if (this.unsubscribeTenantChange) {
+      this.unsubscribeTenantChange()
+    }
   }
 
   async loadPromptHistory(): Promise<void> {

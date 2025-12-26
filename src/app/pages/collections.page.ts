@@ -4,6 +4,7 @@ import {
   computed,
   inject,
   OnInit,
+  OnDestroy,
   signal,
 } from '@angular/core'
 import { Router } from '@angular/router'
@@ -38,6 +39,7 @@ import { addIcons } from 'ionicons'
 import { add, chevronForward, close, filterOutline, menu } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData, FilterItem, PaginationInfo } from '../services/api.types'
+import { TenantService } from '../services/tenant.service'
 
 @Component({
   selector: 'app-collections',
@@ -193,9 +195,11 @@ import { DocumentData, FilterItem, PaginationInfo } from '../services/api.types'
     }
   `,
 })
-export class CollectionsPage implements OnInit {
+export class CollectionsPage implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
+  private readonly tenantService = inject(TenantService)
+  private unsubscribeTenantChange?: () => void
 
   collections = signal<string[]>([])
   searchQuery = signal('')
@@ -442,6 +446,25 @@ export class CollectionsPage implements OnInit {
 
   ngOnInit(): void {
     this.loadCollections()
+
+    // Subscribe to tenant changes
+    this.unsubscribeTenantChange = this.tenantService.onTenantChange(() => {
+      // Reset state and reload collections when tenant changes
+      this.collections.set([])
+      this.selectedCollection.set(null)
+      this.documents.set([])
+      this.initialDocuments.set([])
+      this.filters.set([])
+      this.pagination.set(null)
+      this.loadCollections()
+    })
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup subscription
+    if (this.unsubscribeTenantChange) {
+      this.unsubscribeTenantChange()
+    }
   }
 
   async loadCollections(): Promise<void> {
