@@ -166,7 +166,9 @@
           @for (item of result()?.queries ?? []; track item.id) {
           <div class="queryCard">
             <div class="queryContent">
-              <pre class="queryText">{{ item.query }}</pre>
+              <pre class="queryText"
+                   contenteditable="true"
+                   (blur)="updateQuery(item, $event)">{{ item.query }}</pre>
               <div class="queryActions">
                 <ion-button size="small"
                             fill="clear"
@@ -176,28 +178,17 @@
                   <ion-icon slot="icon-only"
                             [name]="copiedQueryId() === item.id ? 'checkmark-circle' : 'clipboard'"></ion-icon>
                 </ion-button>
-                @if (!item.result && !item.error) {
                 <ion-button size="small"
+                            [color]="item.error ? 'danger' : undefined"
+                            [fill]="item.error ? 'outline' : 'solid'"
+                            class="runButton"
                             (click)="runQuery(item)"
                             [disabled]="item.isLoading">
                   @if (item.isLoading) {
                   <ion-spinner slot="start"></ion-spinner>
                   }
-                  {{ item.isLoading ? 'Running...' : 'Run' }}
+                  {{ item.isLoading ? '' : (item.result ? 'Run' : (item.error ? 'Retry' : 'Run')) }}
                 </ion-button>
-                }
-                @if (item.error) {
-                <ion-button size="small"
-                            color="danger"
-                            fill="outline"
-                            (click)="runQuery(item)"
-                            [disabled]="item.isLoading">
-                  @if (item.isLoading) {
-                  <ion-spinner slot="start"></ion-spinner>
-                  }
-                  {{ item.isLoading ? 'Running...' : 'Retry' }}
-                </ion-button>
-                }
               </div>
             </div>
             @if (item.result) {

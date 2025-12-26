@@ -298,6 +298,22 @@ type QueryItem = {
       padding: 12px;
       border-radius: 8px;
       line-height: 1.6;
+      outline: none;
+      transition: all 0.2s ease;
+
+      &:focus {
+        background: var(--ion-color-medium);
+        // box-shadow: 0 0 0 2px var(--ion-color-primary-tint);
+      }
+    }
+
+    .runButton {
+      min-width: 50px;
+
+      ion-spinner {
+        max-height: 20px;
+        max-width: 20px;
+      }
     }
 
     .queryResult {
@@ -888,6 +904,20 @@ export class PromptPage implements OnInit, OnDestroy {
       const newState = !pinned
       this.storageService.set('menuPinned', newState)
       return newState
+    })
+  }
+
+  updateQuery(queryItem: QueryItem, event: Event): void {
+    const target = event.target as HTMLElement
+    const newQuery = target.textContent?.trim() || ''
+
+    this.result.update((r) => {
+      const item = r?.queries?.find((x) => x.id === queryItem.id)
+      if (item && newQuery) {
+        item.query = newQuery
+        item.collection = this.extractCollectionFromQuery(newQuery)
+      }
+      return r ? { ...r } : null
     })
   }
 }
