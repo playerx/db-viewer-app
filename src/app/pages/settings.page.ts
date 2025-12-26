@@ -11,6 +11,7 @@ import {
   IonCard,
   IonCardContent,
   IonCardHeader,
+  IonCardSubtitle,
   IonCardTitle,
   IonContent,
   IonHeader,
@@ -42,6 +43,7 @@ import { TenantService } from '../services/tenant.service'
     IonCardTitle,
     IonCardContent,
     FormsModule,
+    IonCardSubtitle,
   ],
   templateUrl: './settings.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,6 +60,12 @@ import { TenantService } from '../services/tenant.service'
     .centeredContent {
       max-width: 800px;
       margin: 0 auto;
+    }
+
+    ion-note.hint {
+      margin-bottom: 18px;
+      display: block;
+      margin-top: -18px;
     }
   `,
 })
@@ -81,7 +89,9 @@ export class SettingsPage {
 
   async createTenant() {
     const alert = await this.alertController.create({
-      header: 'Create New Tenant',
+      header: 'Connect to a new database',
+      message:
+        'Your connection string will be stored securely using encryption.',
       inputs: [
         {
           name: 'dbConnectionString',

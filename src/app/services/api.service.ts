@@ -56,16 +56,11 @@ export class ApiService {
     )
   }
 
-  async deleteTenant(tenantId: string): Promise<CreateTenantResponse> {
+  async deleteTenant(tenantId: string): Promise<boolean> {
     return firstValueFrom(
-      this.http.delete<CreateTenantResponse>(
-        `${this.baseUrl}/tenants/${tenantId}`,
-        {
-          headers: new HttpHeaders({
-            'Content-Type': 'application/json',
-          }),
-        }
-      )
+      this.http.delete<boolean>(`${this.baseUrl}/tenants/${tenantId}`, {
+        headers: this.getHeaders(),
+      })
     )
   }
 

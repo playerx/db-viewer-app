@@ -9,8 +9,13 @@
     <ion-card>
       <ion-card-header>
         <ion-card-title>Connected Databases</ion-card-title>
+        <ion-card-subtitle></ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
+        <ion-note class="hint"
+                  color="medium">
+          <p>All connection strings are stored securely using encryption.</p>
+        </ion-note>
         @if (tenantService.loading()) {
         <div class="loadingContainer">
           <ion-spinner></ion-spinner>
@@ -44,6 +49,7 @@
             <ion-button slot="end"
                         color="danger"
                         fill="clear"
+                        [disabled]="!tenant.userId"
                         (click)="deleteTenant(tenant.id)">
               Delete
             </ion-button>

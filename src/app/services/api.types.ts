@@ -101,6 +101,7 @@ export interface Tenant {
   dbName: string
   hostname: string
   displayConfig: Record<string, string[]>
+  userId: string
 }
 
 export interface TenantsResponse {
