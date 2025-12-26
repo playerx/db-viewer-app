@@ -113,6 +113,8 @@ type QueryItem = {
           --padding-end: 8px;
           margin-right: 8px;
           z-index: 1000;
+          margin-bottom: 0;
+          margin-top: 0;
 
           ion-icon {
             font-size: 31px;
@@ -285,6 +287,8 @@ type QueryItem = {
       display: flex;
       gap: 8px;
       flex-shrink: 0;
+      position: sticky;
+      top: 10px;
     }
 
     .queryText {
@@ -302,7 +306,7 @@ type QueryItem = {
       transition: all 0.2s ease;
 
       &:focus {
-        background: var(--ion-color-medium);
+        background: var(--ion-color-light-tint);
         // box-shadow: 0 0 0 2px var(--ion-color-primary-tint);
       }
     }
@@ -456,8 +460,8 @@ type QueryItem = {
     }
 
     ion-menu-button {
-      margin-top: 4px;
-      margin-left: 3px;
+      margin-top: 0px;
+      margin-left: 4px;
     }
 
     .timestamp {
