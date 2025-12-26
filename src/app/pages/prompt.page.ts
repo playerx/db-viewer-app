@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common'
+import { DatePipe, isPlatformBrowser } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,6 +6,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   signal,
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
@@ -572,6 +573,7 @@ export class PromptPage implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
   private readonly storageService = inject(StorageService)
+  private readonly platformId = inject(PLATFORM_ID)
   private eventSource: EventSource | null = null
 
   tips = signal([
@@ -617,6 +619,10 @@ export class PromptPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return
+    }
+
     const savedPinState = this.storageService.get<boolean>('menuPinned')
     if (savedPinState !== null) {
       this.menuPinned.set(savedPinState)
