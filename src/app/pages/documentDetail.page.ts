@@ -29,6 +29,8 @@ import {
   NuMonacoEditorDiffModel,
   NuMonacoEditorEvent,
 } from '@ng-util/monaco-editor'
+import { addIcons } from 'ionicons'
+import { checkmarkCircle } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData } from '../services/api.types'
 
@@ -162,6 +164,7 @@ export class DocumentDetailPage implements OnInit {
   loading = signal(false)
   error = signal<string | null>(null)
   jsonString = signal('')
+  saveSuccess = signal(false)
 
   // Prompt and diff-related signals
   promptText = signal('')
@@ -212,6 +215,10 @@ export class DocumentDetailPage implements OnInit {
       this.documentId.set(id)
       this.loadDocument()
     }
+
+    addIcons({
+      checkmarkCircle,
+    })
   }
 
   onEditorInit(e: NuMonacoEditorEvent) {
@@ -277,7 +284,10 @@ export class DocumentDetailPage implements OnInit {
       this.diffEditorKey.update((x) => x + 1)
 
       this.showDiff.set(false)
-      // alert('Document updated successfully')
+
+      // Show success feedback
+      this.saveSuccess.set(true)
+      setTimeout(() => this.saveSuccess.set(false), 500)
     } catch (err) {
       this.loading.set(false)
       console.error(err)

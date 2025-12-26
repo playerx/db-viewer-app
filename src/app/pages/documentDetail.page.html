@@ -7,11 +7,15 @@
     <ion-title>Document Details</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="saveDocument()"
-                  [disabled]="loading()">
+                  [disabled]="loading()"
+                  [color]="saveSuccess() ? undefined : undefined">
         @if (loading()) {
         <ion-spinner></ion-spinner>
+        } @else if (saveSuccess()) {
+        <ion-icon slot="end"
+                  name="checkmark-circle"></ion-icon>
+        Saved
         } @else {
-
         Save
         }
       </ion-button>
