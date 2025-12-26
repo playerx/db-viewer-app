@@ -65,8 +65,8 @@
     <ion-fab vertical="bottom"
              horizontal="end"
              slot="fixed">
-      <ion-fab-button (click)="togglePrompt()">
-        <ion-icon name="chatbubble"></ion-icon>
+      <ion-fab-button (click)="togglePrompt();">
+        <ion-icon name="create-outline"></ion-icon>
       </ion-fab-button>
     </ion-fab>
     }
@@ -74,8 +74,8 @@
     @if (promptExpanded()) {
     <div class="promptSection">
       <div class="promptInputContainer">
-        <ion-textarea [rows]="4"
-                      autofocus
+        <ion-textarea #promptInputEl
+                      [rows]="4"
                       [placeholder]="'Enter your prompt to transform the document...'"
                       [(ngModel)]="promptText"
                       [disabled]="loading()"></ion-textarea>

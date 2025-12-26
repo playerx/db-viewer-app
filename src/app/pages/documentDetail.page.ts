@@ -150,6 +150,8 @@ export class DocumentDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute)
   private readonly router = inject(Router)
 
+  promptInputEl = viewChild<IonTextarea>('promptInputEl')
+
   editor = viewChild<monaco.editor.IStandaloneCodeEditor>('editor')
 
   diffEditorKey = signal(0)
@@ -403,6 +405,7 @@ export class DocumentDetailPage implements OnInit {
 
   togglePrompt(): void {
     this.promptExpanded.update((v) => !v)
+    setTimeout(() => this.promptInputEl()?.setFocus(), 100)
   }
 
   acceptChanges(): void {
