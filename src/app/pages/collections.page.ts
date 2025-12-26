@@ -472,12 +472,13 @@ export class CollectionsPage implements OnInit, OnDestroy {
     this.error.set(null)
     try {
       const collections = await this.apiService.getCollections()
-      this.collections.set(collections)
+      const sortedCollections = collections.sort((a, b) => a.localeCompare(b))
+      this.collections.set(sortedCollections)
       this.loading.set(false)
 
       // Auto-select first collection if available
-      if (collections.length > 0 && !this.selectedCollection()) {
-        this.selectCollection(collections[0])
+      if (sortedCollections.length > 0 && !this.selectedCollection()) {
+        this.selectCollection(sortedCollections[0])
       }
     } catch (err) {
       this.error.set('Failed to load collections')
