@@ -132,16 +132,18 @@
           }
         </div>
 
-        <!-- Error Display -->
-        @if (result()?.result) {
-        <ion-card>
-          <ion-card-header>
-            <ion-card-subtitle>Please update your prompt</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            {{ result()?.result }}
-          </ion-card-content>
-        </ion-card>
+        <!-- Suggestion Display -->
+        @if (result()?.result && !result()?.queries?.length) {
+        <div class="suggestionCard"
+             [class.success]="!!result()?.queries?.length">
+
+          <div class="suggestionHeader">
+            <ion-icon name="bulb"></ion-icon>
+            <span>Need your feedback</span>
+          </div>
+
+          <pre class="suggestionContent">{{ result()?.result }}</pre>
+        </div>
         }
 
 

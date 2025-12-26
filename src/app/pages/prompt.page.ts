@@ -35,6 +35,7 @@ import {
 import { EJSON, ObjectId } from 'bson'
 import { addIcons } from 'ionicons'
 import {
+  bulb,
   checkmarkCircle,
   chevronDown,
   chevronUp,
@@ -520,6 +521,51 @@ type QueryItem = {
         flex-shrink: 0;
       }
     }
+
+    .suggestionCard {
+      margin: 0 20px 20px 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(var(--ion-color-warning-rgb), 0.1), rgba(var(--ion-color-warning-rgb), 0.05));
+      border: 2px solid var(--ion-color-warning-tint);
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(var(--ion-color-warning-rgb), 0.15);
+      animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .suggestionHeader {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--ion-color-warning-shade);
+
+      ion-icon {
+        font-size: 24px;
+        color: var(--ion-color-warning);
+      }
+    }
+
+    .suggestionContent {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--ion-color-dark);
+      background: rgba(255, 255, 255, 0.7);
+      padding: 16px;
+      border-radius: 12px;
+    }
   `,
 })
 export class PromptPage implements OnInit, OnDestroy {
@@ -557,6 +603,7 @@ export class PromptPage implements OnInit, OnDestroy {
 
   constructor() {
     addIcons({
+      bulb,
       chevronDown,
       chevronUp,
       clipboard,
