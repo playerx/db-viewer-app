@@ -35,24 +35,26 @@
           </ion-item>
           } @else {
           @for (tenant of tenantService.tenants(); track tenant.id) {
-          <ion-item>
-            <ion-label>
-              <h3>{{ tenant.dbName }}</h3>
-              <p>{{ tenant.hostname }}</p>
-            </ion-label>
-            <ion-button slot="end"
-                        [fill]="tenantService.selectedTenantId() === tenant.id ? 'solid' : 'outline'"
-                        [disabled]="tenantService.selectedTenantId() === tenant.id"
-                        (click)="onTenantChange(tenant.id)">
-              {{ tenantService.selectedTenantId() === tenant.id ? 'Active' : 'Connect' }}
-            </ion-button>
-            <ion-button slot="end"
-                        color="danger"
-                        fill="clear"
-                        [disabled]="!tenant.userId"
-                        (click)="deleteTenant(tenant.id)">
-              Delete
-            </ion-button>
+          <ion-item class="tenantItem">
+            <div class="tenantContent">
+              <ion-label>
+                <h3>{{ tenant.dbName }}</h3>
+                <p>{{ tenant.hostname }}</p>
+              </ion-label>
+              <div class="tenantActions">
+                <ion-button [fill]="tenantService.selectedTenantId() === tenant.id ? 'solid' : 'outline'"
+                            [disabled]="tenantService.selectedTenantId() === tenant.id"
+                            (click)="onTenantChange(tenant.id)">
+                  {{ tenantService.selectedTenantId() === tenant.id ? 'Active' : 'Connect' }}
+                </ion-button>
+                <ion-button color="danger"
+                            fill="clear"
+                            [disabled]="!tenant.userId"
+                            (click)="disconnectTenant(tenant.id)">
+                  Disconnect
+                </ion-button>
+              </div>
+            </div>
           </ion-item>
           }
           }
@@ -68,7 +70,7 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card>
+    <!-- <ion-card>
       <ion-card-header>
         <ion-card-title>Application Info</ion-card-title>
       </ion-card-header>
@@ -90,6 +92,6 @@
           }
         </ion-list>
       </ion-card-content>
-    </ion-card>
+    </ion-card> -->
   </div>
 </ion-content>

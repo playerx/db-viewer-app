@@ -67,6 +67,46 @@ import { TenantService } from '../services/tenant.service'
       display: block;
       margin-top: -18px;
     }
+
+    .tenantItem {
+      --inner-padding-end: 0;
+    }
+
+    .tenantContent {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 1rem;
+      padding: 0.5rem 0;
+    }
+
+    .tenantActions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .tenantContent {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .tenantActions {
+        width: 100%;
+        justify-content: stretch;
+
+        ion-button {
+          flex: 1;
+        }
+      }
+
+      ion-label {
+        margin-bottom: 0.25rem;
+      }
+    }
   `,
 })
 export class SettingsPage {
@@ -150,18 +190,30 @@ export class SettingsPage {
     await alert.present()
   }
 
-  async deleteTenant(tenantId: string) {
+  async disconnectTenant(tenantId: string) {
+    // Prevent disconnecting active tenant
+    if (this.tenantService.selectedTenantId() === tenantId) {
+      const errorAlert = await this.alertController.create({
+        header: 'Cannot Disconnect Active Database',
+        message:
+          'You cannot disconnect the currently active database. Please switch to another database first.',
+        buttons: ['OK'],
+      })
+      await errorAlert.present()
+      return
+    }
+
     const alert = await this.alertController.create({
-      header: 'Delete Tenant',
+      header: 'Disconnect Database',
       message:
-        'Are you sure you want to delete this tenant configuration? Note: The actual database will NOT be deleted, only the tenant configuration in this app.',
+        'Are you sure you want to disconnect from this database? Note: The actual database will NOT be deleted, only the connection configuration in this app.',
       buttons: [
         {
           text: 'Cancel',
           role: 'cancel',
         },
         {
-          text: 'Delete',
+          text: 'Disconnect',
           role: 'destructive',
           handler: async () => {
             try {
@@ -173,7 +225,7 @@ export class SettingsPage {
                 message:
                   error instanceof Error
                     ? error.message
-                    : 'Failed to delete tenant',
+                    : 'Failed to disconnect database',
                 buttons: ['OK'],
               })
               await errorAlert.present()
