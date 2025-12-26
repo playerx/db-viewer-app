@@ -99,6 +99,7 @@ export interface PromptError {
 export interface Tenant {
   id: string
   dbName: string
+  hostname: string
   displayConfig: Record<string, string[]>
 }
 

@@ -112,4 +112,24 @@ export class TenantService {
       this.storage.remove('selectedTenantId')
     }
   }
+
+  async deleteTenant(tenantId: string): Promise<void> {
+    this.loadingSignal.set(true)
+    this.errorSignal.set(null)
+    try {
+      await this.api.deleteTenant(tenantId)
+      // If the deleted tenant was selected, clear selection
+      if (this.selectedTenantIdSignal() === tenantId) {
+        this.selectTenant(null)
+      }
+      await this.loadTenants()
+    } catch (error) {
+      this.errorSignal.set(
+        error instanceof Error ? error.message : 'Failed to delete tenant'
+      )
+      throw error
+    } finally {
+      this.loadingSignal.set(false)
+    }
+  }
 }

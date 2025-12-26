@@ -1,26 +1,28 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core'
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonList,
-  IonItem,
-  IonLabel,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core'
+import { FormsModule } from '@angular/forms'
+import {
+  AlertController,
   IonButton,
-  IonSpinner,
-  IonNote,
-  IonRadioGroup,
-  IonRadio,
-  IonInput,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonCardContent,
-  AlertController,
+  IonContent,
+  IonHeader,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonNote,
+  IonSpinner,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone'
 import { TenantService } from '../services/tenant.service'
-import { FormsModule } from '@angular/forms'
 
 @Component({
   selector: 'app-settings',
@@ -35,9 +37,6 @@ import { FormsModule } from '@angular/forms'
     IonButton,
     IonSpinner,
     IonNote,
-    IonRadioGroup,
-    IonRadio,
-    IonInput,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -54,6 +53,11 @@ import { FormsModule } from '@angular/forms'
       justify-content: center;
       padding: 2rem;
       gap: 1rem;
+    }
+
+    .centeredContent {
+      max-width: 800px;
+      margin: 0 auto;
     }
   `,
 })
@@ -102,7 +106,7 @@ export class SettingsPage {
           role: 'cancel',
         },
         {
-          text: 'Create',
+          text: 'Connect',
           role: 'confirm',
           handler: async (data) => {
             if (!data.dbConnectionString || !data.dbName) {
@@ -123,6 +127,43 @@ export class SettingsPage {
                   error instanceof Error
                     ? error.message
                     : 'Failed to create tenant',
+                buttons: ['OK'],
+              })
+              await errorAlert.present()
+              return false
+            }
+          },
+        },
+      ],
+    })
+
+    await alert.present()
+  }
+
+  async deleteTenant(tenantId: string) {
+    const alert = await this.alertController.create({
+      header: 'Delete Tenant',
+      message:
+        'Are you sure you want to delete this tenant configuration? Note: The actual database will NOT be deleted, only the tenant configuration in this app.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              await this.tenantService.deleteTenant(tenantId)
+              return true
+            } catch (error) {
+              const errorAlert = await this.alertController.create({
+                header: 'Error',
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : 'Failed to delete tenant',
                 buttons: ['OK'],
               })
               await errorAlert.present()
