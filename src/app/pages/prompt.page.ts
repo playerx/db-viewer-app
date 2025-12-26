@@ -15,6 +15,7 @@ import {
   IonCard,
   IonCardContent,
   IonCardHeader,
+  IonCardSubtitle,
   IonCardTitle,
   IonContent,
   IonHeader,
@@ -83,6 +84,7 @@ type QueryItem = {
     IonMenuButton,
     FormsModule,
     DatePipe,
+    IonCardSubtitle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './prompt.page.html',
@@ -534,7 +536,9 @@ export class PromptPage implements OnInit, OnDestroy {
   prompt = signal('')
   loading = signal(false)
   updates = signal<PromptUpdate[]>([])
-  result = signal<QueryItem[] | null>(null)
+  result = signal<{ queries: QueryItem[]; result: string; id: string } | null>(
+    null
+  )
   error = signal<string | null>(null)
   history = signal<PromptLog[]>([])
   showProgressDetails = signal(false)
@@ -616,8 +620,12 @@ export class PromptPage implements OnInit, OnDestroy {
         queries: string[]
         result: string
       }
-      this.result.set(
-        result.queries.map((x) => ({
+
+      console.log(result)
+      this.result.set({
+        id: result.id,
+        result: result.result,
+        queries: result.queries.map((x) => ({
           id: crypto.randomUUID(),
           promptLogId: result.id,
           query: x,
@@ -626,8 +634,8 @@ export class PromptPage implements OnInit, OnDestroy {
           collection: this.extractCollectionFromQuery(x),
           isLoading: false,
           error: null,
-        }))
-      )
+        })),
+      })
       this.loading.set(false)
 
       // Reload history to include the new prompt log
@@ -681,9 +689,13 @@ export class PromptPage implements OnInit, OnDestroy {
     this.updates.set([])
     this.error.set(null)
 
+    console.log(item)
+
     // Load the queries from the selected prompt log
-    this.result.set(
-      item.queries.map((query) => ({
+    this.result.set({
+      id: item._id,
+      result: item.result,
+      queries: item.queries.map((query) => ({
         id: crypto.randomUUID(),
         promptLogId: item._id,
         query: query,
@@ -692,8 +704,8 @@ export class PromptPage implements OnInit, OnDestroy {
         collection: this.extractCollectionFromQuery(query),
         isLoading: false,
         error: null,
-      }))
-    )
+      })),
+    })
 
     // Close menu if not pinned
     if (!this.menuPinned() && menu) {
@@ -706,14 +718,14 @@ export class PromptPage implements OnInit, OnDestroy {
   }
 
   async runQuery(queryItem: QueryItem) {
-    this.result.update((items) => {
-      const item = items?.find((x) => x.id === queryItem.id)
+    this.result.update((r) => {
+      const item = r?.queries?.find((x) => x.id === queryItem.id)
       if (item) {
         item.isLoading = true
         item.error = null
       }
 
-      return items
+      return r ? { ...r } : null
     })
 
     try {
@@ -722,26 +734,26 @@ export class PromptPage implements OnInit, OnDestroy {
         queryItem.promptLogId
       )
 
-      this.result.update((items) => {
-        const item = items?.find((x) => x.id === queryItem.id)
+      this.result.update((r) => {
+        const item = r?.queries?.find((x) => x.id === queryItem.id)
         if (item) {
           item.result = JSON.stringify(res[0], null, 2)
           item.resultData = res[0]
           item.isLoading = false
         }
 
-        return items ? [...items] : null
+        return r ? { ...r } : null
       })
     } catch (error) {
-      this.result.update((items) => {
-        const item = items?.find((x) => x.id === queryItem.id)
+      this.result.update((r) => {
+        const item = r?.queries?.find((x) => x.id === queryItem.id)
         if (item) {
           item.error =
             error instanceof Error ? error.message : 'Failed to run query'
           item.isLoading = false
         }
 
-        return items ? [...items] : null
+        return r ? { ...r } : null
       })
     }
   }

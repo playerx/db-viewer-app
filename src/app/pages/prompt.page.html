@@ -133,6 +133,19 @@
         </div>
 
         <!-- Error Display -->
+        @if (result()?.result) {
+        <ion-card>
+          <ion-card-header>
+            <ion-card-subtitle>Please update your prompt</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            {{ result()?.result }}
+          </ion-card-content>
+        </ion-card>
+        }
+
+
+        <!-- Error Display -->
         @if (error()) {
         <ion-card color="danger">
           <ion-card-header>
@@ -145,10 +158,10 @@
         }
 
         <!-- Query Results List -->
-        @if (result() && result()!.length > 0) {
+        @if (result() && result()!.queries.length > 0) {
         <div class="queryList">
           <h3 class="queryListTitle">Generated Queries</h3>
-          @for (item of result(); track item.id) {
+          @for (item of result()?.queries ?? []; track item.id) {
           <div class="queryCard">
             <div class="queryContent">
               <pre class="queryText">{{ item.query }}</pre>
