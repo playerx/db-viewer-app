@@ -7,7 +7,7 @@ import {
   IonLabel,
 } from '@ionic/angular/standalone'
 import { addIcons } from 'ionicons'
-import { chatbubble, documents, calendar } from 'ionicons/icons'
+import { chatbubble, documents, calendar, settings } from 'ionicons/icons'
 
 @Component({
   selector: 'app-tabs',
@@ -16,6 +16,6 @@ import { chatbubble, documents, calendar } from 'ionicons/icons'
 })
 export class TabsPage {
   constructor() {
-    addIcons({ chatbubble, documents, calendar })
+    addIcons({ chatbubble, documents, calendar, settings })
   }
 }

@@ -25,6 +25,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/collections.page').then((m) => m.CollectionsPage),
       },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./pages/settings.page').then((m) => m.SettingsPage),
+      },
     ],
   },
   {
