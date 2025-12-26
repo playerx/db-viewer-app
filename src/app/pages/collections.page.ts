@@ -3,8 +3,8 @@ import {
   Component,
   computed,
   inject,
-  OnInit,
   OnDestroy,
+  OnInit,
   signal,
 } from '@angular/core'
 import { Router } from '@angular/router'
@@ -83,6 +83,12 @@ import { TenantService } from '../services/tenant.service'
       text-align: center;
       padding: 40px 20px;
       color: var(--ion-color-medium);
+    }
+
+
+    ion-menu-button {
+      margin-top: 0px;
+      margin-left: 4px;
     }
 
     .documentItem {

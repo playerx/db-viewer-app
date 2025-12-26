@@ -13,6 +13,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(),
-    provideIonicAngular({ mode: 'ios', swipeBackEnabled: false }),
+    provideIonicAngular({ mode: 'ios' }),
   ],
 }
