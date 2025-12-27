@@ -9,6 +9,7 @@ import {
 } from '@angular/core'
 import { Router } from '@angular/router'
 import {
+  AlertController,
   IonButton,
   IonButtons,
   IonChip,
@@ -19,6 +20,9 @@ import {
   IonInfiniteScrollContent,
   IonInput,
   IonItem,
+  IonItemOption,
+  IonItemOptions,
+  IonItemSliding,
   IonLabel,
   IonList,
   IonMenu,
@@ -36,7 +40,7 @@ import {
 } from '@ionic/angular/standalone'
 import { EJSON, ObjectId } from 'bson'
 import { addIcons } from 'ionicons'
-import { add, chevronForward, close, filterOutline, menu } from 'ionicons/icons'
+import { add, chevronForward, close, filterOutline, menu, trash } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData, FilterItem, PaginationInfo } from '../services/api.types'
 import { MenuService } from '../services/menu.service'
@@ -55,6 +59,9 @@ import { TenantService } from '../services/tenant.service'
     IonRefresherContent,
     IonList,
     IonItem,
+    IonItemSliding,
+    IonItemOptions,
+    IonItemOption,
     IonLabel,
     IonIcon,
     IonButton,
@@ -206,6 +213,7 @@ export class CollectionsPage implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
   private readonly tenantService = inject(TenantService)
+  private readonly alertController = inject(AlertController)
   readonly menuService = inject(MenuService)
   private unsubscribeTenantChange?: () => void
 
@@ -351,6 +359,7 @@ export class CollectionsPage implements OnInit, OnDestroy {
       close,
       add,
       filterOutline,
+      trash,
     })
   }
 
@@ -606,5 +615,55 @@ export class CollectionsPage implements OnInit, OnDestroy {
     } else {
       return date.toLocaleDateString()
     }
+  }
+
+  async deleteDocument(doc: DocumentData, slidingItem: IonItemSliding): Promise<void> {
+    const collection = this.selectedCollection()
+    if (!collection || !doc._id) return
+
+    const alert = await this.alertController.create({
+      header: 'Confirm Delete',
+      message: 'Are you sure you want to delete this record? This action cannot be undone.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => {
+            slidingItem.close()
+          },
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              const id = typeof doc._id === 'object' ? doc._id.toHexString() : String(doc._id)
+              await this.apiService.deleteDocument(collection, id)
+
+              // Remove document from the list
+              this.documents.update((docs) => docs.filter((d) => d._id !== doc._id))
+
+              // Update pagination count
+              this.pagination.update((p) => {
+                if (p) {
+                  return {
+                    ...p,
+                    total: p.total - 1,
+                  }
+                }
+                return p
+              })
+
+              slidingItem.close()
+            } catch (err) {
+              console.error('Failed to delete document:', err)
+              slidingItem.close()
+            }
+          },
+        },
+      ],
+    })
+
+    await alert.present()
   }
 }

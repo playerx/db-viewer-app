@@ -171,27 +171,37 @@
       <ion-list>
         @for (doc of documents(); track doc._id) {
         @if (doc._id) {
-        <ion-item button
-                  class="documentItem"
-                  (click)="viewDocument(doc._id)">
-          <ion-label>
-            @if (getDocumentName(doc)) {
-            <h2>{{ getDocumentName(doc) }}</h2>
-            @if (getDocumentEmail(doc)) {
-            <p>{{ getDocumentEmail(doc) }}</p>
+        <ion-item-sliding #slidingItem>
+          <ion-item button
+                    class="documentItem"
+                    (click)="viewDocument(doc._id)">
+            <ion-label>
+              @if (getDocumentName(doc)) {
+              <h2>{{ getDocumentName(doc) }}</h2>
+              @if (getDocumentEmail(doc)) {
+              <p>{{ getDocumentEmail(doc) }}</p>
+              }
+              } @else {
+              <h2>{{ doc._id }}</h2>
+              }
+            </ion-label>
+            @if (getDocumentUpdateDate(doc)) {
+            <ion-note slot="end"
+                      class="dateLabel">
+              <p>{{ getDocumentUpdateDate(doc) }}</p>
+            </ion-note>
             }
-            } @else {
-            <h2>{{ doc._id }}</h2>
-            }
-          </ion-label>
-          @if (getDocumentUpdateDate(doc)) {
-          <ion-note slot="end"
-                    class="dateLabel">
-            <p>{{ getDocumentUpdateDate(doc) }}</p>
-          </ion-note>
-          }
 
-        </ion-item>
+          </ion-item>
+
+          <ion-item-options side="end">
+            <ion-item-option color="danger"
+                             (click)="deleteDocument(doc, slidingItem)">
+              <ion-icon slot="icon-only"
+                        name="trash"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
         }
         }
       </ion-list>
