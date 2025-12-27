@@ -104,7 +104,13 @@ export class TenantService {
       await this.loadTenants()
       this.selectTenant(response.tenant.id)
       return response.tenant
-    } catch (error) {
+    } catch (error: any) {
+      const message = error?.error?.error
+
+      if (message) {
+        throw new Error(message)
+      }
+
       this.errorSignal.set(
         error instanceof Error ? error.message : 'Failed to create tenant'
       )

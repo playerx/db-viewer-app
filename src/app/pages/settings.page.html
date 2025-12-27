@@ -11,18 +11,20 @@
         <ion-label>Connected Databases</ion-label>
       </ion-list-header>
 
+      @if (tenantService.error()) {
+      <ion-item>
+        <ion-label color="danger">
+          Error: {{ tenantService.error() }}
+        </ion-label>
+      </ion-item>
+      }
+
       @if (tenantService.loading()) {
       <ion-item>
         <div class="loadingContainer">
           <ion-spinner></ion-spinner>
           <ion-label>Loading connected databases...</ion-label>
         </div>
-      </ion-item>
-      } @else if (tenantService.error()) {
-      <ion-item>
-        <ion-label color="danger">
-          Error: {{ tenantService.error() }}
-        </ion-label>
       </ion-item>
       } @else {
       @if (tenantService.tenants().length === 0) {
