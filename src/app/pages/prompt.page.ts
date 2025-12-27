@@ -1,4 +1,4 @@
-import { DatePipe, isPlatformBrowser } from '@angular/common'
+import { DatePipe } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
@@ -639,10 +639,6 @@ export class PromptPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return
-    }
-
     const savedPinState = await this.storageService.getItem<boolean>(
       'menuPinned'
     )

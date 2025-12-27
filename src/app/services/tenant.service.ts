@@ -1,4 +1,3 @@
-import { isPlatformBrowser } from '@angular/common'
 import {
   computed,
   effect,
@@ -49,13 +48,11 @@ export class TenantService {
   }
 
   async onInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      const storedTenantId = await this.storage.getItem<string>(
-        'selectedTenantId'
-      )
-      if (storedTenantId) {
-        this.selectedTenantIdSignal.set(storedTenantId)
-      }
+    const storedTenantId = await this.storage.getItem<string>(
+      'selectedTenantId'
+    )
+    if (storedTenantId) {
+      this.selectedTenantIdSignal.set(storedTenantId)
     }
   }
 
