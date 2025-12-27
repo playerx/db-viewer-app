@@ -311,28 +311,48 @@ export class SettingsPage {
               return false
             }
 
-            try {
-              // Request the email login code
-              await this.identityService.requestEmailLogin(
-                data.email,
-                window.location.origin
-              )
+            // Disable inputs and button
+            const buttons = document.querySelectorAll('ion-alert button')
+            const sendButton = Array.from(buttons).find(
+              (btn) => btn.textContent?.trim() === 'Send Code'
+            ) as HTMLButtonElement
 
-              // Step 2: Request verification code
-              await this.showEmailCodeVerification(data.email)
-              return true
-            } catch (error) {
-              const errorAlert = await this.alertController.create({
-                header: 'Error',
-                message:
-                  error instanceof Error
-                    ? error.message
-                    : 'Failed to send verification code',
-                buttons: ['OK'],
-              })
-              await errorAlert.present()
-              return false
+            if (sendButton) {
+              sendButton.disabled = true
+              const originalText = sendButton.textContent
+              sendButton.textContent = 'Sending...'
+
+              try {
+                // Request the email login code
+                await this.identityService.requestEmailLogin(
+                  data.email,
+                  window.location.origin
+                )
+
+                // Step 2: Request verification code
+                await this.showEmailCodeVerification(data.email)
+                return true
+              } catch (error) {
+                // Re-enable on error
+                if (sendButton) {
+                  sendButton.disabled = false
+                  sendButton.textContent = originalText
+                }
+
+                const errorAlert = await this.alertController.create({
+                  header: 'Error',
+                  message:
+                    error instanceof Error
+                      ? error.message
+                      : 'Failed to send verification code',
+                  buttons: ['OK'],
+                })
+                await errorAlert.present()
+                return false
+              }
             }
+
+            return false
           },
         },
       ],
@@ -370,23 +390,43 @@ export class SettingsPage {
               return false
             }
 
-            try {
-              await this.identityService.completeEmailLogin(email, data.code)
-              // Reload tenants after successful sign-in
-              await this.tenantService.loadTenants()
-              return true
-            } catch (error) {
-              const errorAlert = await this.alertController.create({
-                header: 'Error',
-                message:
-                  error instanceof Error
-                    ? error.message
-                    : 'Failed to verify code',
-                buttons: ['OK'],
-              })
-              await errorAlert.present()
-              return false
+            // Disable inputs and button
+            const buttons = document.querySelectorAll('ion-alert button')
+            const verifyButton = Array.from(buttons).find(
+              (btn) => btn.textContent?.trim() === 'Verify'
+            ) as HTMLButtonElement
+
+            if (verifyButton) {
+              verifyButton.disabled = true
+              const originalText = verifyButton.textContent
+              verifyButton.textContent = 'Verifying...'
+
+              try {
+                await this.identityService.completeEmailLogin(email, data.code)
+                // Reload tenants after successful sign-in
+                await this.tenantService.loadTenants()
+                return true
+              } catch (error) {
+                // Re-enable on error
+                if (verifyButton) {
+                  verifyButton.disabled = false
+                  verifyButton.textContent = originalText
+                }
+
+                const errorAlert = await this.alertController.create({
+                  header: 'Error',
+                  message:
+                    error instanceof Error
+                      ? error.message
+                      : 'Failed to verify code',
+                  buttons: ['OK'],
+                })
+                await errorAlert.present()
+                return false
+              }
             }
+
+            return false
           },
         },
       ],
