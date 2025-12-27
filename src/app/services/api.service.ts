@@ -26,8 +26,8 @@ export class ApiService {
   private readonly storage = inject(StorageService)
   private readonly baseUrl = environment.apiUrl
 
-  private getHeaders(): HttpHeaders {
-    const tenantId = this.storage.get<string>('selectedTenantId')
+  private async getHeaders(): Promise<HttpHeaders> {
+    const tenantId = await this.storage.getItem<string>('selectedTenantId')
     let headers = new HttpHeaders({
       'Content-Type': 'application/json',
     })
@@ -59,7 +59,7 @@ export class ApiService {
   async deleteTenant(tenantId: string): Promise<boolean> {
     return firstValueFrom(
       this.http.delete<boolean>(`${this.baseUrl}/tenants/${tenantId}`, {
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
       })
     )
   }
@@ -70,7 +70,7 @@ export class ApiService {
       this.http.get<{ collections: string[] }>(
         `${this.baseUrl}/data/collections`,
         {
-          headers: this.getHeaders(),
+          headers: await this.getHeaders(),
         }
       )
     ).then((x) => x.collections)
@@ -91,7 +91,7 @@ export class ApiService {
     return firstValueFrom(
       this.http.get<CollectionResponse>(`${this.baseUrl}/data/${collection}`, {
         params: httpParams,
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
       })
     )
   }
@@ -99,7 +99,7 @@ export class ApiService {
   async getDocumentById(collection: string, id: string): Promise<DocumentData> {
     return firstValueFrom(
       this.http.get<DocumentData>(`${this.baseUrl}/data/${collection}/${id}`, {
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
       })
     )
   }
@@ -114,7 +114,7 @@ export class ApiService {
         `${this.baseUrl}/data/${collection}/${id}`,
         data,
         {
-          headers: this.getHeaders(),
+          headers: await this.getHeaders(),
         }
       )
     )
@@ -129,7 +129,7 @@ export class ApiService {
         `${this.baseUrl}/transform`,
         { json, prompt },
         {
-          headers: this.getHeaders(),
+          headers: await this.getHeaders(),
         }
       )
     )
@@ -143,7 +143,7 @@ export class ApiService {
       this.http.delete<DeleteResponse>(
         `${this.baseUrl}/data/${collection}/${id}`,
         {
-          headers: this.getHeaders(),
+          headers: await this.getHeaders(),
         }
       )
     )
@@ -155,7 +155,7 @@ export class ApiService {
         `${this.baseUrl}/data/queries?promptLogId=${promptLogId}`,
         queries,
         {
-          headers: this.getHeaders(),
+          headers: await this.getHeaders(),
         }
       )
     )
@@ -176,7 +176,7 @@ export class ApiService {
     return firstValueFrom(
       this.http.get<EventLog[] | EventsResponse>(`${this.baseUrl}/events`, {
         params: httpParams,
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
       })
     )
   }
@@ -184,14 +184,14 @@ export class ApiService {
   async deleteEvent(id: string): Promise<DeleteResponse> {
     return firstValueFrom(
       this.http.delete<DeleteResponse>(`${this.baseUrl}/events/${id}`, {
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
       })
     )
   }
 
   // Prompt API - returns the URL for EventSource SSE connection
-  getPromptUrl(prompt: string): string {
-    const tenantId = this.storage.get<string>('selectedTenantId')
+  async getPromptUrl(prompt: string): Promise<string> {
+    const tenantId = await this.storage.getItem<string>('selectedTenantId')
     let params = new HttpParams().set('prompt', prompt)
     if (tenantId) {
       params = params.set('x-tenant-id', tenantId)
@@ -212,7 +212,7 @@ export class ApiService {
     return firstValueFrom(
       this.http.get<PromptLogsResponse>(`${this.baseUrl}/prompt/log`, {
         params: httpParams,
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
       })
     )
   }
@@ -225,7 +225,7 @@ export class ApiService {
     return firstValueFrom(
       this.http.get<PromptLog>(`${this.baseUrl}/prompt/log/${id}`, {
         params: httpParams,
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
       })
     )
   }
@@ -237,7 +237,7 @@ export class ApiService {
       this.http.delete<{ success: boolean; message: string }>(
         `${this.baseUrl}/prompt/log/${id}`,
         {
-          headers: this.getHeaders(),
+          headers: await this.getHeaders(),
         }
       )
     )

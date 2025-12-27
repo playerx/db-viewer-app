@@ -1,5 +1,12 @@
-import { computed, effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core'
 import { isPlatformBrowser } from '@angular/common'
+import {
+  computed,
+  effect,
+  inject,
+  Injectable,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core'
 import { ApiService } from './api.service'
 import { Tenant } from './api.types'
 import { StorageService } from './storage.service'
@@ -32,18 +39,24 @@ export class TenantService {
   })
 
   constructor() {
-    if (isPlatformBrowser(this.platformId)) {
-      const storedTenantId = this.storage.get<string>('selectedTenantId')
-      if (storedTenantId) {
-        this.selectedTenantIdSignal.set(storedTenantId)
-      }
-    }
+    this.onInit()
 
     // Effect to notify listeners when tenant changes
     effect(() => {
       const tenantId = this.selectedTenantIdSignal()
       this.notifyTenantChange(tenantId)
     })
+  }
+
+  async onInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      const storedTenantId = await this.storage.getItem<string>(
+        'selectedTenantId'
+      )
+      if (storedTenantId) {
+        this.selectedTenantIdSignal.set(storedTenantId)
+      }
+    }
   }
 
   onTenantChange(callback: TenantChangeCallback): () => void {
@@ -104,12 +117,12 @@ export class TenantService {
     }
   }
 
-  selectTenant(tenantId: string | null): void {
+  async selectTenant(tenantId: string | null): Promise<void> {
     this.selectedTenantIdSignal.set(tenantId)
     if (tenantId) {
-      this.storage.set('selectedTenantId', tenantId)
+      await this.storage.setItem('selectedTenantId', tenantId)
     } else {
-      this.storage.remove('selectedTenantId')
+      await this.storage.removeItem('selectedTenantId')
     }
   }
 

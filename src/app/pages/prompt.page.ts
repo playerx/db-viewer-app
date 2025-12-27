@@ -16,7 +16,6 @@ import {
   IonCard,
   IonCardContent,
   IonCardHeader,
-  IonCardSubtitle,
   IonCardTitle,
   IonContent,
   IonHeader,
@@ -87,7 +86,6 @@ type QueryItem = {
     IonMenuButton,
     FormsModule,
     DatePipe,
-    IonCardSubtitle,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './prompt.page.html',
@@ -645,7 +643,9 @@ export class PromptPage implements OnInit, OnDestroy {
       return
     }
 
-    const savedPinState = this.storageService.get<boolean>('menuPinned')
+    const savedPinState = await this.storageService.getItem<boolean>(
+      'menuPinned'
+    )
     if (savedPinState !== null) {
       this.menuPinned.set(savedPinState)
     }
@@ -684,7 +684,7 @@ export class PromptPage implements OnInit, OnDestroy {
     }
   }
 
-  executePrompt(): void {
+  async executePrompt(): Promise<void> {
     const promptText = this.prompt().trim()
     if (!promptText) return
 
@@ -694,7 +694,7 @@ export class PromptPage implements OnInit, OnDestroy {
     this.updates.set([])
     this.closeEventSource()
 
-    const url = this.apiService.getPromptUrl(promptText)
+    const url = await this.apiService.getPromptUrl(promptText)
     this.eventSource = new EventSource(url)
 
     this.eventSource.addEventListener('update', (event: MessageEvent) => {
@@ -922,7 +922,7 @@ export class PromptPage implements OnInit, OnDestroy {
   toggleMenuPin(): void {
     this.menuPinned.update((pinned) => {
       const newState = !pinned
-      this.storageService.set('menuPinned', newState)
+      this.storageService.setItem('menuPinned', newState)
       return newState
     })
   }
