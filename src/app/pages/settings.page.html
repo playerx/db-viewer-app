@@ -6,6 +6,7 @@
 
 <ion-content>
   <section class="container">
+    @if (identityService.user().verified) {
     <ion-list [inset]="true">
       <ion-list-header>
         <ion-label>Connected Databases</ion-label>
@@ -73,6 +74,38 @@
         All connection strings are stored securely using encryption.
       </ion-note>
     </ion-list>
+    } @else {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Connected Databases</ion-label>
+      </ion-list-header>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h3>Sign In Required</h3>
+          <p>Please sign in to access and manage your connected databases.</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item [button]="true"
+                (click)="signInWithPasskey()">
+        <ion-label color="primary">
+          Sign In with Passkey
+        </ion-label>
+      </ion-item>
+
+      <ion-item [button]="true"
+                (click)="signInWithEmail()">
+        <ion-label color="primary">
+          Sign In with Email
+        </ion-label>
+      </ion-item>
+
+      <ion-note class="listNote">
+        Use your device's biometric authentication, security key, or email to sign in securely.
+      </ion-note>
+    </ion-list>
+    }
 
     <ion-list [inset]="true">
       <ion-list-header>
@@ -94,5 +127,29 @@
         Choose whether the navigation menu appears on the left or right side of the screen.
       </ion-note>
     </ion-list>
+
+
+    @if (identityService.user().verified) {
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Account</ion-label>
+      </ion-list-header>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h3>{{ identityService.user().name || identityService.user().email }}</h3>
+          <p>{{ identityService.user().email }}</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-item [button]="true"
+                (click)="signOut()">
+        <ion-label color="danger">
+          Sign Out
+        </ion-label>
+      </ion-item>
+    </ion-list>
+    }
+
   </section>
 </ion-content>

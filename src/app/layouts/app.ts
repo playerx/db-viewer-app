@@ -5,6 +5,7 @@ import { jok } from '@jokio/sdk'
 import { addIcons } from 'ionicons'
 import { createOutline, documents } from 'ionicons/icons'
 import { environment } from '../../environments/environment.js'
+import { IdentityService } from '../services/identity.service.js'
 import { MenuService } from '../services/menu.service'
 import { StorageService } from '../services/storage.service.js'
 
@@ -17,6 +18,7 @@ export class App {
   private readonly menuService = inject(MenuService)
   private platformId = inject(PLATFORM_ID)
   private storage = inject(StorageService)
+  private identity = inject(IdentityService)
 
   constructor() {
     const isBrowser = isPlatformBrowser(this.platformId)
@@ -30,6 +32,8 @@ export class App {
       authUrl: environment.authApiUrl,
       storage: this.storage,
     })
+
+    this.identity.load()
 
     // Initialize menu service
     this.menuService.init()
