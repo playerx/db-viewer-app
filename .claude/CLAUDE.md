@@ -48,6 +48,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 ## Local Storage
 
 - When you need a local storage always use storage service.
+- When you need to store some data locally and use it in views consider using localData signal.
 
 ## State Management
 
