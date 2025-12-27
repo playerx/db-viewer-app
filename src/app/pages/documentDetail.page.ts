@@ -32,7 +32,7 @@ import {
   NuMonacoEditorEvent,
 } from '@ng-util/monaco-editor'
 import { addIcons } from 'ionicons'
-import { checkmarkCircle, trash } from 'ionicons/icons'
+import { checkmarkCircle, trashOutline } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData } from '../services/api.types'
 import { DataService } from '../services/data.service'
@@ -235,7 +235,7 @@ export class DocumentDetailPage implements OnInit {
 
     addIcons({
       checkmarkCircle,
-      trash,
+      trashOutline,
     })
   }
 
