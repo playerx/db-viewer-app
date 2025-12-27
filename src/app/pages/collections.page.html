@@ -38,7 +38,8 @@
         @for (collection of filteredCollections(); track collection) {
         <ion-item button
                   (click)="selectCollection(collection); dataMenu?.close();"
-                  [class.selectedCollection]="selectedCollection() === collection">
+                  [class.selectedCollection]="selectedCollection() === collection"
+                  [detail]="menuService.menuPosition() === 'start'">
           <ion-label>{{ collection }}</ion-label>
         </ion-item>
         }

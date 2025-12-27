@@ -40,7 +40,8 @@
         @for (item of history(); track item._id) {
         <ion-item button
                   class="historyItem"
-                  (click)="loadFromHistory(item, promptMenu); promptMenu.close()">
+                  (click)="loadFromHistory(item, promptMenu); promptMenu.close()"
+                  [detail]="menuService.menuPosition() === 'start'">
           <ion-label>
             <h3>{{ item.prompt }}</h3>
             <p class="timestamp">{{ item.lastUsedAt | date:'short' }}</p>
