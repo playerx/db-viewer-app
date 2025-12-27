@@ -1,5 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core'
+import { jok } from '@jokio/sdk'
 import { firstValueFrom } from 'rxjs'
 import { environment } from '../../environments/environment'
 import {
@@ -196,7 +197,12 @@ export class ApiService {
     if (tenantId) {
       params = params.set('x-tenant-id', tenantId)
     }
-    return `${this.baseUrl}/prompt?${params.toString()}`
+
+    const accessToken = (await jok.auth.getAccessToken()) ?? ''
+
+    return `${
+      this.baseUrl
+    }/prompt?${params.toString()}&accessToken=${accessToken}`
   }
 
   // Prompt Logs API

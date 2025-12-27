@@ -1,7 +1,9 @@
+import { isPlatformBrowser } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  PLATFORM_ID,
   signal,
 } from '@angular/core'
 import { FormsModule } from '@angular/forms'
@@ -121,6 +123,7 @@ import { TenantService } from '../services/tenant.service'
 })
 export class SettingsPage {
   private readonly alertController = inject(AlertController)
+  private readonly platformId = inject(PLATFORM_ID)
   readonly menuService = inject(MenuService)
   readonly tenantService = inject(TenantService)
   readonly identityService = inject(IdentityService)
@@ -128,6 +131,10 @@ export class SettingsPage {
   readonly showCreateForm = signal(false)
 
   async ngOnInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return
+    }
+
     await this.tenantService.loadTenants()
   }
 

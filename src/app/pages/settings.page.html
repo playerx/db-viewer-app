@@ -6,7 +6,23 @@
 
 <ion-content>
   <section class="container">
+    <ion-list [inset]="true"
+              [lines]="'none'">
+      <ion-list-header>
+        <ion-label>Active Database</ion-label>
+      </ion-list-header>
+
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <h2>{{ tenantService.selectedTenant() ? tenantService.selectedTenant()!.dbName : 'Demo' }}</h2>
+          <p>{{ tenantService.selectedTenant() ? tenantService.selectedTenant()!.hostname: '' }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
     @if (identityService.user().verified) {
+
+
     <ion-list [inset]="true">
       <ion-list-header>
         <ion-label>Connected Databases</ion-label>
@@ -116,7 +132,6 @@
         <ion-select [value]="menuService.menuPosition()"
                     (ionChange)="onMenuPositionChange($any($event.detail).value)"
                     label="Menu Position"
-                    labelPlacement="stacked"
                     interface="popover">
           <ion-select-option value="start">Left</ion-select-option>
           <ion-select-option value="end">Right</ion-select-option>

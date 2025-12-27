@@ -1,9 +1,9 @@
+import { isPlatformBrowser } from '@angular/common'
 import {
   HttpHandlerFn,
   HttpInterceptorFn,
   HttpRequest,
 } from '@angular/common/http'
-import { isPlatformBrowser } from '@angular/common'
 import { PLATFORM_ID, inject } from '@angular/core'
 import { jok } from '@jokio/sdk'
 import { from, switchMap } from 'rxjs'
@@ -19,7 +19,6 @@ export const authInterceptor: HttpInterceptorFn = (
     return next(req)
   }
 
-  console.log('interceptor', req.url)
   return from(jok.auth.getAccessToken()).pipe(
     switchMap((token) => {
       const authReq = req.clone({
