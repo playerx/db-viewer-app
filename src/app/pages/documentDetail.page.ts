@@ -10,6 +10,7 @@ import {
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router } from '@angular/router'
 import {
+  AlertController,
   IonBackButton,
   IonButton,
   IonButtons,
@@ -22,6 +23,7 @@ import {
   IonTextarea,
   IonTitle,
   IonToolbar,
+  NavController,
 } from '@ionic/angular/standalone'
 import {
   NuMonacoEditorComponent,
@@ -30,9 +32,10 @@ import {
   NuMonacoEditorEvent,
 } from '@ng-util/monaco-editor'
 import { addIcons } from 'ionicons'
-import { checkmarkCircle } from 'ionicons/icons'
+import { checkmarkCircle, trash } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData } from '../services/api.types'
+import { DataService } from '../services/data.service'
 
 @Component({
   selector: 'app-document-detail',
@@ -162,6 +165,9 @@ export class DocumentDetailPage implements OnInit {
   private readonly apiService = inject(ApiService)
   private readonly route = inject(ActivatedRoute)
   private readonly router = inject(Router)
+  private readonly alertController = inject(AlertController)
+  private readonly navCtrl = inject(NavController)
+  private readonly dataService = inject(DataService)
 
   promptInputEl = viewChild<IonTextarea>('promptInputEl')
 
@@ -229,6 +235,7 @@ export class DocumentDetailPage implements OnInit {
 
     addIcons({
       checkmarkCircle,
+      trash,
     })
   }
 
@@ -307,24 +314,44 @@ export class DocumentDetailPage implements OnInit {
   }
 
   async deleteDocument(): Promise<void> {
-    if (
-      !confirm(
-        'Are you sure you want to delete this document? This action cannot be undone.'
-      )
-    ) {
-      return
-    }
+    const alert = await this.alertController.create({
+      header: 'Confirm Delete',
+      message:
+        'Are you sure you want to delete this document? This action cannot be undone.',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            this.loading.set(true)
+            try {
+              await this.apiService.deleteDocument(
+                this.collection(),
+                this.documentId()
+              )
+              this.dataService.triggerRefresh()
+              this.navCtrl.navigateBack('/tabs/data')
+            } catch (err) {
+              this.loading.set(false)
+              console.error(err)
 
-    this.loading.set(true)
-    try {
-      await this.apiService.deleteDocument(this.collection(), this.documentId())
-      alert('Document deleted successfully')
-      this.router.navigate(['/tabs/data'])
-    } catch (err) {
-      this.loading.set(false)
-      console.error(err)
-      alert('Failed to delete document')
-    }
+              const errorAlert = await this.alertController.create({
+                header: 'Error',
+                message: 'Failed to delete document',
+                buttons: ['OK'],
+              })
+              await errorAlert.present()
+            }
+          },
+        },
+      ],
+    })
+
+    await alert.present()
   }
 
   async runPrompt(): Promise<void> {

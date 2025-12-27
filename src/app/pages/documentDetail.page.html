@@ -20,10 +20,11 @@
         }
       </ion-button>
 
-      <!-- <ion-button color="danger"
-                  (click)="deleteDocument()">
-        Delete
-      </ion-button> -->
+      <ion-button color="danger"
+                  (click)="deleteDocument()"
+                  [disabled]="loading()">
+        <ion-icon name="trash"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

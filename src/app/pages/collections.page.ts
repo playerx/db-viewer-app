@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   OnDestroy,
   OnInit,
@@ -43,6 +44,7 @@ import { addIcons } from 'ionicons'
 import { add, chevronForward, close, filterOutline, menu, trash } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData, FilterItem, PaginationInfo } from '../services/api.types'
+import { DataService } from '../services/data.service'
 import { MenuService } from '../services/menu.service'
 import { TenantService } from '../services/tenant.service'
 
@@ -214,6 +216,7 @@ export class CollectionsPage implements OnInit, OnDestroy {
   private readonly router = inject(Router)
   private readonly tenantService = inject(TenantService)
   private readonly alertController = inject(AlertController)
+  private readonly dataService = inject(DataService)
   readonly menuService = inject(MenuService)
   private unsubscribeTenantChange?: () => void
 
@@ -360,6 +363,17 @@ export class CollectionsPage implements OnInit, OnDestroy {
       add,
       filterOutline,
       trash,
+    })
+
+    // Listen for refresh trigger from other components
+    effect(() => {
+      const trigger = this.dataService.getRefreshTrigger()()
+      if (trigger > 0) {
+        const collection = this.selectedCollection()
+        if (collection) {
+          this.loadDocuments(collection)
+        }
+      }
     })
   }
 
