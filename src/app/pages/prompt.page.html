@@ -1,9 +1,11 @@
 <ion-split-pane contentId="prompt-content"
-                [when]="whenCondition()">
+                [when]="whenCondition()"
+                [contentId]="'prompt-content'">
   <!-- Menu/Sidebar - Recent Queries -->
   <ion-menu contentId="prompt-content"
             menuId="promptMenu"
             class="promptMenu"
+            [side]="menuService.menuPosition()"
             #promptMenu>
     <ion-header>
       <ion-toolbar>
@@ -13,7 +15,7 @@
             Recent Queries
           </div>
         </ion-title>
-        <ion-button slot="start"
+        <ion-button [slot]="menuService.menuPosition()"
                     fill="clear"
                     class="pinButton"
                     (click)="toggleMenuPin(); promptMenu.close()">
@@ -56,7 +58,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-menu-button menu="promptMenu"
-                         slot="start"
+                         [slot]="menuService.menuPosition()"
                          (click)="menuPinned.set(true)"></ion-menu-button>
         <ion-title>Talk to your DB</ion-title>
       </ion-toolbar>

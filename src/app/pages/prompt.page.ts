@@ -48,6 +48,7 @@ import {
 } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData, PromptLog, PromptUpdate } from '../services/api.types'
+import { MenuService } from '../services/menu.service'
 import { StorageService } from '../services/storage.service'
 import { TenantService } from '../services/tenant.service'
 
@@ -593,6 +594,7 @@ export class PromptPage implements OnInit, OnDestroy {
   private readonly storageService = inject(StorageService)
   private readonly tenantService = inject(TenantService)
   private readonly platformId = inject(PLATFORM_ID)
+  readonly menuService = inject(MenuService)
   private eventSource: EventSource | null = null
   private unsubscribeTenantChange?: () => void
 

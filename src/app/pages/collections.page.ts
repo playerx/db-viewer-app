@@ -39,6 +39,7 @@ import { addIcons } from 'ionicons'
 import { add, chevronForward, close, filterOutline, menu } from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData, FilterItem, PaginationInfo } from '../services/api.types'
+import { MenuService } from '../services/menu.service'
 import { TenantService } from '../services/tenant.service'
 
 @Component({
@@ -205,6 +206,7 @@ export class CollectionsPage implements OnInit, OnDestroy {
   private readonly apiService = inject(ApiService)
   private readonly router = inject(Router)
   private readonly tenantService = inject(TenantService)
+  readonly menuService = inject(MenuService)
   private unsubscribeTenantChange?: () => void
 
   collections = signal<string[]>([])

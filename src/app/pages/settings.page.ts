@@ -8,21 +8,20 @@ import { FormsModule } from '@angular/forms'
 import {
   AlertController,
   IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
   IonContent,
   IonHeader,
   IonItem,
   IonLabel,
   IonList,
+  IonListHeader,
   IonNote,
+  IonSelect,
+  IonSelectOption,
   IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone'
+import { MenuService } from '../services/menu.service'
 import { TenantService } from '../services/tenant.service'
 
 @Component({
@@ -33,43 +32,53 @@ import { TenantService } from '../services/tenant.service'
     IonTitle,
     IonContent,
     IonList,
+    IonListHeader,
     IonItem,
     IonLabel,
     IonButton,
     IonSpinner,
     IonNote,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
     FormsModule,
-    IonCardSubtitle,
+    IonSelect,
+    IonSelectOption,
   ],
   templateUrl: './settings.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
+    ion-content {
+      --background: var(--ion-background-color, #f4f5f8);
+    }
+
+    section.container {
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      justify-self: center;
+      width: 100%;
+    }
+
+    ion-list {
+      margin-bottom: 20px;
+    }
+
     .loadingContainer {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 2rem;
       gap: 1rem;
+      padding: 1rem 0;
+      width: 100%;
     }
 
-    .centeredContent {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    ion-note.hint {
-      margin-bottom: 18px;
+    .listNote {
       display: block;
-      margin-top: -18px;
+      padding: 12px 16px;
+      font-size: 0.875rem;
+      line-height: 1.4;
     }
 
     .tenantItem {
       --inner-padding-end: 0;
+      --padding-start: 16px;
     }
 
     .tenantContent {
@@ -103,7 +112,7 @@ import { TenantService } from '../services/tenant.service'
         }
       }
 
-      ion-label {
+      .tenantContent ion-label {
         margin-bottom: 0.25rem;
       }
     }
@@ -111,12 +120,17 @@ import { TenantService } from '../services/tenant.service'
 })
 export class SettingsPage {
   private readonly alertController = inject(AlertController)
+  readonly menuService = inject(MenuService)
   readonly tenantService = inject(TenantService)
 
   readonly showCreateForm = signal(false)
 
   async ngOnInit() {
     await this.tenantService.loadTenants()
+  }
+
+  async onMenuPositionChange(position: 'start' | 'end') {
+    await this.menuService.setMenuPosition(position)
   }
 
   onTenantChange(tenantId: string) {

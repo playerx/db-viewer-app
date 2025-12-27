@@ -4,94 +4,93 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="centeredContent">
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Connected Databases</ion-card-title>
-        <ion-card-subtitle></ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-note class="hint"
-                  color="medium">
-          <p>All connection strings are stored securely using encryption.</p>
-        </ion-note>
-        @if (tenantService.loading()) {
+<ion-content>
+  <section class="container">
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Connected Databases</ion-label>
+      </ion-list-header>
+
+      @if (tenantService.loading()) {
+      <ion-item>
         <div class="loadingContainer">
           <ion-spinner></ion-spinner>
-          <p>Loading connected databases...</p>
+          <ion-label>Loading connected databases...</ion-label>
         </div>
-        } @else if (tenantService.error()) {
-        <ion-note color="danger">
+      </ion-item>
+      } @else if (tenantService.error()) {
+      <ion-item>
+        <ion-label color="danger">
           Error: {{ tenantService.error() }}
-        </ion-note>
-        } @else {
-        <ion-list>
-          @if (tenantService.tenants().length === 0) {
-          <ion-item>
-            <ion-label>
-              <p>No tenants configured. Create one to get started.</p>
-            </ion-label>
-          </ion-item>
-          } @else {
-          @for (tenant of tenantService.tenants(); track tenant.id) {
-          <ion-item class="tenantItem">
-            <div class="tenantContent">
-              <ion-label>
-                <h3>{{ tenant.dbName }}</h3>
-                <p>{{ tenant.hostname }}</p>
-              </ion-label>
-              <div class="tenantActions">
-                <ion-button [fill]="tenantService.selectedTenantId() === tenant.id ? 'solid' : 'outline'"
-                            [disabled]="tenantService.selectedTenantId() === tenant.id"
-                            (click)="onTenantChange(tenant.id)">
-                  {{ tenantService.selectedTenantId() === tenant.id ? 'Active' : 'Connect' }}
-                </ion-button>
-                <ion-button color="danger"
-                            fill="clear"
-                            [disabled]="!tenant.userId"
-                            (click)="disconnectTenant(tenant.id)">
-                  Disconnect
-                </ion-button>
-              </div>
-            </div>
-          </ion-item>
-          }
-          }
-
-          <ion-item>
-            <ion-button expand="block"
-                        (click)="createTenant()">
-              Connect to a new database
+        </ion-label>
+      </ion-item>
+      } @else {
+      @if (tenantService.tenants().length === 0) {
+      <ion-item>
+        <ion-label class="ion-text-wrap">
+          <p>No databases configured. Connect to one to get started.</p>
+        </ion-label>
+      </ion-item>
+      } @else {
+      @for (tenant of tenantService.tenants(); track tenant.id) {
+      <ion-item class="tenantItem">
+        <div class="tenantContent">
+          <ion-label class="ion-text-wrap">
+            <h3>{{ tenant.dbName }}</h3>
+            <p>{{ tenant.hostname }}</p>
+          </ion-label>
+          <div class="tenantActions">
+            <ion-button [fill]="tenantService.selectedTenantId() === tenant.id ? 'solid' : 'outline'"
+                        [disabled]="tenantService.selectedTenantId() === tenant.id"
+                        size="small"
+                        (click)="onTenantChange(tenant.id)">
+              {{ tenantService.selectedTenantId() === tenant.id ? 'Active' : 'Connect' }}
             </ion-button>
-          </ion-item>
-        </ion-list>
-        }
-      </ion-card-content>
-    </ion-card>
+            <ion-button color="danger"
+                        fill="clear"
+                        size="small"
+                        [disabled]="!tenant.userId"
+                        (click)="disconnectTenant(tenant.id)">
+              Disconnect
+            </ion-button>
+          </div>
+        </div>
+      </ion-item>
+      }
+      }
+      }
 
-    <!-- <ion-card>
-      <ion-card-header>
-        <ion-card-title>Application Info</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          <ion-item>
-            <ion-label>
-              <h2>Version</h2>
-              <p>1.0.0</p>
-            </ion-label>
-          </ion-item>
-          @if (tenantService.selectedTenant()) {
-          <ion-item>
-            <ion-label>
-              <h2>Current Database</h2>
-              <p>{{ tenantService.selectedTenant()?.dbName }}</p>
-            </ion-label>
-          </ion-item>
-          }
-        </ion-list>
-      </ion-card-content>
-    </ion-card> -->
-  </div>
+      <ion-item [button]="true"
+                (click)="createTenant()">
+        <ion-label color="primary">
+          Connect to a new database
+        </ion-label>
+      </ion-item>
+
+      <ion-note class="listNote">
+        All connection strings are stored securely using encryption.
+      </ion-note>
+    </ion-list>
+
+    <ion-list [inset]="true">
+      <ion-list-header>
+        <ion-label>Display Settings</ion-label>
+      </ion-list-header>
+
+      <ion-item>
+        <ion-select [value]="menuService.menuPosition()"
+                    (ionChange)="onMenuPositionChange($any($event.detail).value)"
+                    label="Menu Position"
+                    labelPlacement="stacked"
+                    interface="popover">
+          <ion-select-option value="start">Left</ion-select-option>
+          <ion-select-option value="end">Right</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-note class="listNote">
+        Choose whether the navigation menu appears on the left or right side of the screen.
+      </ion-note>
+    </ion-list>
+  </section>
 </ion-content>

@@ -2,6 +2,7 @@
   <!-- Menu/Sidebar - Collections List -->
   <ion-menu contentId="data-content"
             menuId="dataMenu"
+            [side]="menuService.menuPosition()"
             #dataMenu>
     <ion-header>
       <ion-toolbar>
@@ -52,7 +53,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-menu-button menu="dataMenu"
-                         slot="start"></ion-menu-button>
+                         [slot]="menuService.menuPosition()"></ion-menu-button>
         <ion-title>
           @if (selectedCollection()) {
           {{ selectedCollection() }}
@@ -61,7 +62,7 @@
           }
         </ion-title>
         @if (selectedCollection()) {
-        <ion-buttons slot="end">
+        <ion-buttons [slot]="menuService.menuPosition() === 'start' ? 'end' : 'start'">
           <ion-button (click)="toggleFilters()">
             <ion-icon slot="icon-only"
                       name="filter-outline"></ion-icon>
