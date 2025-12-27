@@ -1,3 +1,4 @@
+import { isPlatformBrowser } from '@angular/common'
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,6 +7,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   signal,
 } from '@angular/core'
 import { Router } from '@angular/router'
@@ -41,7 +43,14 @@ import {
 } from '@ionic/angular/standalone'
 import { EJSON, ObjectId } from 'bson'
 import { addIcons } from 'ionicons'
-import { add, chevronForward, close, filterOutline, menu, trash } from 'ionicons/icons'
+import {
+  add,
+  chevronForward,
+  close,
+  filterOutline,
+  menu,
+  trash,
+} from 'ionicons/icons'
 import { ApiService } from '../services/api.service'
 import { DocumentData, FilterItem, PaginationInfo } from '../services/api.types'
 import { DataService } from '../services/data.service'
@@ -217,6 +226,7 @@ export class CollectionsPage implements OnInit, OnDestroy {
   private readonly tenantService = inject(TenantService)
   private readonly alertController = inject(AlertController)
   private readonly dataService = inject(DataService)
+  private readonly platformId = inject(PLATFORM_ID)
   readonly menuService = inject(MenuService)
   private unsubscribeTenantChange?: () => void
 
@@ -476,6 +486,10 @@ export class CollectionsPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return
+    }
+
     this.loadCollections()
 
     // Subscribe to tenant changes
@@ -631,13 +645,17 @@ export class CollectionsPage implements OnInit, OnDestroy {
     }
   }
 
-  async deleteDocument(doc: DocumentData, slidingItem: IonItemSliding): Promise<void> {
+  async deleteDocument(
+    doc: DocumentData,
+    slidingItem: IonItemSliding
+  ): Promise<void> {
     const collection = this.selectedCollection()
     if (!collection || !doc._id) return
 
     const alert = await this.alertController.create({
       header: 'Confirm Delete',
-      message: 'Are you sure you want to delete this record? This action cannot be undone.',
+      message:
+        'Are you sure you want to delete this record? This action cannot be undone.',
       buttons: [
         {
           text: 'Cancel',
@@ -651,11 +669,16 @@ export class CollectionsPage implements OnInit, OnDestroy {
           role: 'destructive',
           handler: async () => {
             try {
-              const id = typeof doc._id === 'object' ? doc._id.toHexString() : String(doc._id)
+              const id =
+                typeof doc._id === 'object'
+                  ? doc._id.toHexString()
+                  : String(doc._id)
               await this.apiService.deleteDocument(collection, id)
 
               // Remove document from the list
-              this.documents.update((docs) => docs.filter((d) => d._id !== doc._id))
+              this.documents.update((docs) =>
+                docs.filter((d) => d._id !== doc._id)
+              )
 
               // Update pagination count
               this.pagination.update((p) => {

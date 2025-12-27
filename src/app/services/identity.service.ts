@@ -1,8 +1,12 @@
-import { Injectable, signal } from '@angular/core'
+import { inject, Injectable, signal } from '@angular/core'
 import { jok, type UserAuthData } from '@jokio/sdk'
+import { StorageService } from './storage.service'
+import { TenantService } from './tenant.service'
 
 @Injectable({ providedIn: 'root' })
 export class IdentityService {
+  private readonly storage = inject(StorageService)
+  private readonly tenantService = inject(TenantService)
   user = signal<UserAuthData>({
     name: '',
     email: '',
@@ -17,13 +21,13 @@ export class IdentityService {
 
   constructor() {
     this.isAuthenticated = new Promise<void>(
-      resolve => (this.isAuthenticatedResolver = resolve),
+      (resolve) => (this.isAuthenticatedResolver = resolve)
     )
   }
 
   load() {
-    return new Promise<boolean>(resolve => {
-      jok.auth.getLastLoginData().then(async x => {
+    return new Promise<boolean>((resolve) => {
+      jok.auth.getLastLoginData().then(async (x) => {
         if (!x) {
           const res = await jok.auth.guestLogin()
           this.user.set(res)
@@ -59,7 +63,7 @@ export class IdentityService {
   async requestPasskeyLogin(
     displayName: string = '',
     isRegistration: boolean = false,
-    addAsAdditionalDevice = false,
+    addAsAdditionalDevice = false
   ) {
     const res = await jok.auth.requestPasskeyLogin({
       displayName,
@@ -86,6 +90,9 @@ export class IdentityService {
 
     const res = await jok.auth.guestLogin()
     this.user.set(res)
+
+    // Clear tenantId from storage and trigger tenant change to refresh collections
+    await this.tenantService.selectTenant(null)
 
     return res
   }
