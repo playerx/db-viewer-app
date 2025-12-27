@@ -98,10 +98,21 @@ import { DocumentData } from '../services/api.types'
       word-break: break-all;
     }
 
+    ion-fab-button {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+    }
+
     .promptSection {
-      border-top: 1px solid #e0e0e0;
       background: var(--ion-color-light);
       padding: 16px;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      left: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
     }
 
     .promptInputContainer {
