@@ -214,30 +214,30 @@ export class SettingsPage {
     await alert.present()
   }
 
-  async disconnectTenant(tenantId: string) {
-    // Prevent disconnecting active tenant
-    if (this.tenantService.selectedTenantId() === tenantId) {
-      const errorAlert = await this.alertController.create({
-        header: 'Cannot Disconnect Active Database',
-        message:
-          'You cannot disconnect the currently active database. Please switch to another database first.',
-        buttons: ['OK'],
-      })
-      await errorAlert.present()
-      return
-    }
+  async forgetTenant(tenantId: string) {
+    // Prevent forgetting active tenant
+    // if (this.tenantService.selectedTenantId() === tenantId) {
+    //   const errorAlert = await this.alertController.create({
+    //     header: 'Cannot Forget Active Database',
+    //     message:
+    //       'You cannot forget the currently active database. Please switch to another database first.',
+    //     buttons: ['OK'],
+    //   })
+    //   await errorAlert.present()
+    //   return
+    // }
 
     const alert = await this.alertController.create({
-      header: 'Disconnect Database',
+      header: 'Forget Database',
       message:
-        'Are you sure you want to disconnect from this database? Note: The actual database will NOT be deleted, only the connection configuration in this app.',
+        'Are you sure you want to forget this database? Note: The actual database will NOT be deleted, only the connection configuration in this app.',
       buttons: [
         {
           text: 'Cancel',
           role: 'cancel',
         },
         {
-          text: 'Disconnect',
+          text: 'Forget',
           role: 'destructive',
           handler: async () => {
             try {
@@ -249,7 +249,7 @@ export class SettingsPage {
                 message:
                   error instanceof Error
                     ? error.message
-                    : 'Failed to disconnect database',
+                    : 'Failed to forget database',
                 buttons: ['OK'],
               })
               await errorAlert.present()
