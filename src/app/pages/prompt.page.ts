@@ -600,7 +600,7 @@ export class PromptPage implements OnInit, OnDestroy {
 
   tips = signal([
     'Show me all users created this month',
-    'Find top rating users',
+    'Find users with top rating',
   ])
 
   prompt = signal('')
